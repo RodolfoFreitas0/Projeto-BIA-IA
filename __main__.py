@@ -17,8 +17,6 @@ import scripts.core.settings as settings
 class Game:
     def __init__(self):
 
-        #test
-
         pygame.init()
         pygame.display.set_caption(settings.CAPTION)
         self.screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
