@@ -20,10 +20,17 @@ class EnemyManager:
                     continue
 
                     # Gameover caso o jogador toque no inimigo
-                if enemy.rect().colliderect(player.rect()):
-                    print("Colided")
-                    player.HP -= 1
-                    self.enemies.remove(enemy)
+                if settings.DEBUG_MODE == False:
+                    if enemy.rect().colliderect(player.rect()):
+                        print("Colided")
+                        player.HP -= 1
+                        self.enemies.remove(enemy)
+                else:
+                    if enemy.rect().colliderect(player.rect()):
+                        print("Colided")
+                        self.enemies.remove(enemy)
+
+                
             self.enemy_count = len(self.enemies)
             if self.enemy_count > settings.MAX_ENEMIES:
                 self.enemies.clear()

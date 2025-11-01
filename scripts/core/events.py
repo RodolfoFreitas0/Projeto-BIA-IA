@@ -19,6 +19,9 @@ def handle_events(game):
                     
             if game.game_active == True:
                 if event.type == pygame.KEYDOWN:
+                    
+                    if event.key == pygame.K_SPACE:
+                        game.player.shooting = True
 
                     if event.key == pygame.K_a or event.key == pygame.K_LEFT:
                         game.rotation[0] = True
@@ -39,6 +42,9 @@ def handle_events(game):
                             print("Debug Mode: ON")
 
                 elif event.type == pygame.KEYUP:
+
+                    if event.key == pygame.K_SPACE:
+                        game.player.shooting = False
 
                     if event.key == pygame.K_a or event.key == pygame.K_LEFT:
                         game.rotation[0] = False

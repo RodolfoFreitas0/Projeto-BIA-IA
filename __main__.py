@@ -1,6 +1,7 @@
 import pygame
 
 from scripts.entities import Player
+from scripts.entities import Bullet, BulletManager
 from scripts.entities import EnemyManager
 
 from scripts.utills.loader import load_img, load_imgs
@@ -19,7 +20,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption(settings.CAPTION)
         self.screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
-        pygame.display.toggle_fullscreen()
+        # pygame.display.toggle_fullscreen()
         self.display = pygame.Surface(settings.DISPLAY_SIZE)
 
         self.game_active = True
@@ -37,6 +38,7 @@ class Game:
         self.assets = {
             "player": pygame.transform.rotate(load_img("kenney_pixelshmup/Ships/Ship_0000.png"), 0),
             "enemy": pygame.transform.rotate(load_img("kenney_pixelshmup/Tiles/tile_0012.png"), 0),
+            "bullet": pygame.transform.rotate(load_img("kenney_pixelshmup/Tiles/tile_0009.png"), 0),
             "background": load_img("background.png"),
             "clouds": load_imgs("clouds")
         } 
@@ -56,10 +58,13 @@ class Game:
         self.player = Player(self, settings.PLAYER_START_POS, settings.PLAYER_SPEED)
         self.player.width = self.assets["player"].get_width()
 
+        self.bullet_manager = BulletManager(self.enemy_manager.enemies)
+
         self.HUD = HUD(self)
         
         self.CAM = Camera(self.player, (self.display_width, self.display_height))
         self.scroll = [0, 0]
+        self.cooldown = 100
 
     def reset(self):
         self.enemy_manager.enemies.clear()
@@ -104,9 +109,19 @@ class Game:
                      self.highscore = self.score
 
                 self.enemy_manager.update(self.display, self.render_scroll, self.player)
+                self.bullet_manager.update(self.display, self.render_scroll)
 
                 self.player.update(((self.movement[1] - self.movement[0]), 0), rotation)
                 self.player.render(self.display, offset=self.render_scroll)
+
+                if self.player.shooting == True and self.cooldown >= 100:
+                    bullet_pos = self.player.rect().center
+                    bullet_size = (self.assets["bullet"].get_width() / 6, self.assets["bullet"].get_height() / 6)
+                    new_bullet = Bullet(self, bullet_pos, bullet_size)
+                    self.bullet_manager.add(new_bullet)
+                    self.cooldown = 0
+
+                self.cooldown += 10
 
                 if self.player.alive == False:
                     self.game_active = False

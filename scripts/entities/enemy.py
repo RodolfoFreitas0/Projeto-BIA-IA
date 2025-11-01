@@ -12,6 +12,9 @@ class Enemy(PhysicsEntity):
         pos, side = self.spawn_pos(scroll, screen_width, screen_height)
         super().__init__(game, "enemy", pos, size)
 
+        self.screenW = screen_width
+        self.screenH = screen_height
+
         self.side = side
         self.enemies = []
 
@@ -28,6 +31,7 @@ class Enemy(PhysicsEntity):
     @classmethod
     def spawn_pos(cls, scroll, screen_width, screen_height):
         side = random.randint(0, 3)
+        # side = ?
 
         x_centro = scroll[0] + (screen_width // 2)
         y_centro = scroll[1] + (screen_height // 2)
@@ -63,25 +67,43 @@ class Enemy(PhysicsEntity):
         else:  # Esquerda
             return random.uniform(165, 195)
 
+    def outbounds(self, scroll, screen_width, screen_height):
+
+        x_centro = scroll[0] + (screen_width // 2)
+        y_centro = scroll[1] + (screen_height // 2)
+
+        margem = 400
+
+        if self.side == 0:
+            if self.pos[0] > x_centro + (screen_width // 2) + margem or self.pos[1] > y_centro + (screen_height // 2) + margem:
+                self.alive = False
+        elif self.side == 1:
+            if self.pos[0] < x_centro - (screen_width // 2) - margem or self.pos[1] < y_centro - (screen_height // 2) - margem or self.pos[1] > y_centro + (screen_height // 2) + margem :
+                self.alive = False
+        elif self.side == 2:
+            if self.pos[0] > x_centro + (screen_width // 2) + margem or self.pos[1] < y_centro - (screen_height // 2) - margem:
+                self.alive = False
+        elif self.side == 3:
+            if self.pos[0] > x_centro + (screen_width // 2) + margem or self.pos[1] < y_centro - (screen_height // 2) - margem or self.pos[1] > y_centro + (screen_height // 2) + margem:
+                self.alive = False
+
     
     def update(self, surf, scroll):
         
-        if self.side == 0 or 2:
+        if self.side == 0 or self.side == 2:
             self.max_speed = 3
 
         if self.side == 1:
-            self.max_speed = 1
+            self.max_speed = 1.8
 
         if self.side == 3:
             self.max_speed = 4.5
 
-        self.dis = math.sqrt(((self.final_pos[0] - self.pos[0])** 2) + ((self.final_pos[1] - self.pos[1]) ** 2))
         self.angle += random.uniform(-0.3, 0.3)
+
+        self.outbounds(scroll, self.screenH, self.screenW)
         
         super().update(movement=(1,0))
-
-        if self.dis <= 1000:
-            self.alive = False
 
         if settings.DEBUG_MODE:
             pygame.draw.line(

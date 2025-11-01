@@ -4,6 +4,7 @@ class Player(PhysicsEntity):
 
     def __init__(self, game, pos, size):
         super().__init__(game, "player", pos, size)
+        self.shooting = False
         self.HP = 3
 
     def update(self, movement=(0,0), angle=0):

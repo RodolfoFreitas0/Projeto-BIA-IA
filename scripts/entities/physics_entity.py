@@ -37,6 +37,8 @@ class PhysicsEntity:
                 color = (0, 255, 0)
             elif self.type == "enemy":
                 color = (255, 0, 0)
+            elif self.type == "bullet":
+                color = (0, 0, 0)
 
             pygame.draw.rect(surf, color, self.rect().move(-offset[0], -offset[1]), 1)
     
