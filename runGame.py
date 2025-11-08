@@ -1,9 +1,13 @@
 
 from mainCore import CoreGame
 from mainPygame import PygameGame
+import scripts.core.settings as settings
 
 def main():
-    game = PygameGame()
+    if settings.PYGAME_MODE == True:
+        game = PygameGame()
+    else:
+        game = CoreGame()
     game.run()
 
 

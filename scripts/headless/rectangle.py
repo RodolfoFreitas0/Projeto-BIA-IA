@@ -12,12 +12,10 @@ class Rectangle:
         self.width = width
         self.height = height
     
-    def area(self):
-        return self.height * self.width
-    
-    def contain_point(self, px, py):
-        return (self.x <= px <= self.x + self.width and
-                 self.y <= py <= self.y + self.height)
+    def center(self):
+        cx = self.x + self.width / 2
+        cy = self.y + self . height / 2
+        return (cx, cy)
     
     def update(self):
         self.x = self.owner.pos[0] + self.offset_x

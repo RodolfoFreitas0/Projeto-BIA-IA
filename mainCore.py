@@ -17,23 +17,23 @@ class CoreGame:
         self.running = True
 
         self.last_time = time.time()
-        self.spawn_timer = 0
-        self.score_timer - 0
 
-        self.display_width = self.display.get_width()
-        self.display_height = self.display.get_height()
+        self.spawn_timer = 0
+        self.spawntime = settings.SPAWN_TIME
+
+        self.score_timer = 0
+        self.scoretime = settings.SCORE_TIME
+
+        self.display_width = settings.DISPLAY_SIZE[0]
+        self.display_height = settings.DISPLAY_SIZE[1]
 
         self.inputCTRL = InputController()
 
         #Spawn dos inimigos
         self.enemy_manager = EnemyManager()
-        
-        spawntime = settings.SPAWN_TIME
 
         self.score = 0
         self.highscore = 0
-
-        scoretime = settings.SCORE_TIME
 
         self.player = Player(self, settings.PLAYER_START_POS, settings.PLAYER_SPEED)
         self.player.width = 32
@@ -46,7 +46,7 @@ class CoreGame:
 
     def reset(self):
         self.enemy_manager.enemies.clear()
-        scoretime = settings.SCORE_TIME
+        self.scoretime = settings.SCORE_TIME
 
         self.movement = [False, False]
         self.rotation = [False, False]
@@ -77,7 +77,7 @@ class CoreGame:
                     self.spawn_timer = 0
                     self.enemy_manager.spawn_enemy()
                 
-                if self.spawn_timer >= settings.SCORE_TIME:
+                if self.score_timer >= settings.SCORE_TIME:
                     self.score_timer = 0
                     self.score += 1
 
@@ -103,7 +103,7 @@ class CoreGame:
                 self.player.render(self.display, offset=self.render_scroll)
 
                 if self.player.shooting == True and self.cooldown >= 100:
-                    bullet_pos = self.player.rect().center
+                    bullet_pos = self.player.rect.center()
                     bullet_size = (2, 2)
                     new_bullet = Bullet(self, bullet_pos, bullet_size)
                     self.bullet_manager.add(new_bullet)
@@ -116,5 +116,6 @@ class CoreGame:
 
             else:
                 handle_events(self, self.inputCTRL)
+                print(self.highscore)
 
             time.sleep(1/60)

@@ -1,18 +1,19 @@
+from pydoc import render_doc
 import pygame
 
 from scripts.entities import Player
 from scripts.entities import Bullet, BulletManager
 from scripts.entities import EnemyManager
 
-from scripts.utills.loader import load_img, load_imgs
-from scripts.utills.debug import Debug
+from scripts.utills import load_img, load_imgs
+from scripts.utills import Debug
 
-from scripts.visuals.clouds import Clouds
+from scripts.visuals import Clouds
 
-from scripts.core.camera import Camera
-from scripts.core.events import handle_events
-from scripts.core.hud import HUD
-from scripts.core.controller import InputController
+from scripts.core import Camera
+from scripts.core import handle_events
+from scripts.core import HUD
+from scripts.core import InputController
 
 import scripts.core.settings as settings
 
@@ -108,10 +109,11 @@ class PygameGame:
                 if self.score > self.highscore:
                      self.highscore = self.score
 
-                self.enemy_manager.update(self.display, self.render_scroll, self.player)
-                self.bullet_manager.update(self.display, self.render_scroll)
+                self.enemy_manager.update_logic(self.display, self.render_scroll, self.player)
+                self.bullet_manager.update_logic(self.render_scroll)
+                self.bullet_manager.render(self.display, self.render_scroll)
 
-                self.player.update(((self.inputCTRL.movement[1] - self.inputCTRL.movement[0]), 0), rotation)
+                self.player.update_logic(((self.inputCTRL.movement[1] - self.inputCTRL.movement[0]), 0), rotation)
                 
                 self.player.render(self.display, offset=self.render_scroll)
 
