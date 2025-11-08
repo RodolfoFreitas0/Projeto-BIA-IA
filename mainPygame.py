@@ -12,9 +12,11 @@ from scripts.visuals.clouds import Clouds
 from scripts.core.camera import Camera
 from scripts.core.events import handle_events
 from scripts.core.hud import HUD
+from scripts.core.controller import InputController
+
 import scripts.core.settings as settings
 
-class Game:
+class PygameGame:
     def __init__(self):
 
         pygame.init()
@@ -31,8 +33,7 @@ class Game:
         self.display_width = self.display.get_width()
         self.display_height = self.display.get_height()
 
-        self.movement = [False, False]  # [left, right]
-        self.rotation = [False, False]  # [counter-clockwise, clockwise]
+        self.inputCTRL = InputController()
 
         # Carregar assets
         self.assets = {
@@ -70,8 +71,7 @@ class Game:
         self.enemy_manager.enemies.clear()
         pygame.time.set_timer(settings.SPAWN_EVENT, settings.SPAWN_TIME)
 
-        self.movement = [False, False]
-        self.rotation = [False, False]
+        self.inputCTRL.reset()
 
         self.player.angle = 180
         self.player.pos[0] = 300 + self.scroll[0]
@@ -85,7 +85,7 @@ class Game:
     def run(self):
 
         while self.running: 
-            handle_events(self)        
+            handle_events(self, self.inputCTRL)        
             if self.game_active == True:
 
                 self.CAM.update()
@@ -95,8 +95,8 @@ class Game:
 
                 self.clouds.update()
                 self.clouds.render(self.display, offset=self.render_scroll)
-            
-                rotation = (self.rotation[0] - self.rotation[1])
+
+                rotation = self.inputCTRL.rotation_value()
                 
                 player_screen_x = self.player.pos[0] - self.render_scroll[0]
                 if player_screen_x + self.player.width + 40 < 0:
@@ -111,10 +111,11 @@ class Game:
                 self.enemy_manager.update(self.display, self.render_scroll, self.player)
                 self.bullet_manager.update(self.display, self.render_scroll)
 
-                self.player.update(((self.movement[1] - self.movement[0]), 0), rotation)
+                self.player.update(((self.inputCTRL.movement[1] - self.inputCTRL.movement[0]), 0), rotation)
+                
                 self.player.render(self.display, offset=self.render_scroll)
 
-                if self.player.shooting == True and self.cooldown >= 100:
+                if self.inputCTRL.shooting and self.cooldown >= 100:
                     bullet_pos = self.player.rect().center
                     bullet_size = (self.assets["bullet"].get_width() / 6, self.assets["bullet"].get_height() / 6)
                     new_bullet = Bullet(self, bullet_pos, bullet_size)
@@ -130,7 +131,7 @@ class Game:
                 self.HUD.draw_hp(self.display)
 
             else:
-                handle_events(self)
+                handle_events(self, self.inputCTRL)
 
                 self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0])
 
@@ -149,13 +150,3 @@ class Game:
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update() 
             self.clock.tick(60)
-
-# Def para iniciar o jogo
-def main():
-    game = Game()
-    game.run()
-
-
-# Chamando a def que inicia o jogo
-if __name__ == "__main__":
-    main()

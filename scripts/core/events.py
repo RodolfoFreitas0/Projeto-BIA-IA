@@ -3,7 +3,7 @@ import sys
 
 import scripts.core.settings as settings
 
-def handle_events(game):
+def handle_events(game, controller):
     for event in pygame.event.get():
 
             # Fechar o jogo
@@ -21,17 +21,17 @@ def handle_events(game):
                 if event.type == pygame.KEYDOWN:
                     
                     if event.key == pygame.K_SPACE:
-                        game.player.shooting = True
+                        controller.shooting = True
 
                     if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                        game.rotation[0] = True
+                        controller.rotation[0] = True
                     if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                        game.rotation[1] = True
+                        controller.rotation[1] = True
 
                     if event.key == pygame.K_w or event.key == pygame.K_UP:
-                        game.movement[1] = True
+                        controller.movement[1] = True
                     if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                        game.movement[0] = True
+                        controller.movement[0] = True
                     
                     if event.key == pygame.K_b:
                         if settings.DEBUG_MODE == True:
@@ -44,22 +44,22 @@ def handle_events(game):
                 elif event.type == pygame.KEYUP:
 
                     if event.key == pygame.K_SPACE:
-                        game.player.shooting = False
+                        controller.shooting = False
 
                     if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                        game.rotation[0] = False
+                        controller.rotation[0] = False
                     if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                        game.rotation[1] = False
+                        controller.rotation[1] = False
 
                     if event.key == pygame.K_w or event.key == pygame.K_UP:
-                        game.movement[1] = False
+                        controller.movement[1] = False
                     if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                        game.movement[0] = False
+                        controller.movement[0] = False
                         
                 elif event.type == settings.SPAWN_EVENT:
                     from scripts.entities.enemy import Enemy
 
-                    enemy = Enemy(game, game.render_scroll, game.display_width, game.display_height, (3, 3))
+                    enemy = Enemy(game, game.render_scroll, settings.DISPLAY_SIZE[0], settings.DISPLAY_SIZE[1], (3, 3))
                     game.enemy_manager.add(enemy)
                     
                     settings.SPAWN_TIME = max(500, settings.SPAWN_TIME - 50)
