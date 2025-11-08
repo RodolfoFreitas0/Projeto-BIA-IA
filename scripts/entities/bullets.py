@@ -9,34 +9,15 @@ class Bullet(PhysicsEntity):
         
         self.speed = self.max_speed = 6
         self.angle = game.player.angle
-        self.lifetime = 180
         self.alive = True
-    
-    def outbounds(self, scroll, screen_width, screen_height):
+        self.lifetime = 60
 
-        x_centro = scroll[0] + (screen_width // 2)
-        y_centro = scroll[1] + (screen_height // 2)
+    def update_logic(self, scroll):
+        super().update_logic(movement=(1, 0))
 
-        margem = 400
 
-        limite_esquerda = x_centro - (screen_width // 2) - margem
-        limite_direita = x_centro + (screen_width // 2) + margem
-        limite_cima = y_centro - (screen_height // 2) - margem
-        limite_baixo = y_centro + (screen_height // 2) + margem
 
-        if (self.pos[0] < limite_esquerda or 
-            self.pos[0] > limite_direita or 
-            self.pos[1] < limite_cima or 
-            self.pos[1] > limite_baixo):
-            self.alive = False
 
-    def update(self, display, scroll):
-        super().update(movement=(1, 0))
-        self.outbounds(scroll, display.get_width(), display.get_height())
-
-        self.lifetime -= 1
-        if self.lifetime == 0:
-            self.alive = False
 
 class BulletManager:
         def __init__(self, enemies):
@@ -46,10 +27,13 @@ class BulletManager:
         def add(self, bullet):
             self.bullets.append(bullet)
 
-        def update(self, display, scroll):
+        def update_logic(self, scroll):
             for bullet in self.bullets[:]:
-                bullet.update(display, scroll)
-                bullet.render(display, offset=scroll)
+                bullet.update_logic(scroll)
+
+                bullet.lifetime -= 1
+                if bullet.lifetime <= 0:
+                    bullet.alive = False
 
                 if not bullet.alive:
                     self.bullets.remove(bullet)
@@ -62,6 +46,10 @@ class BulletManager:
                         bullet.alive = False
                         self.bullets.remove(bullet)
                         break
+        
+        def render(self, display, scroll):
+            for bullet in self.bullets:    
+                bullet.render(display, scroll)
 
-                if settings.DEBUG_MODE:
-                    Debug(f"Bullets: {len(self.bullets)}", 10, 50, display)
+            if settings.DEBUG_MODE and settings.PYGAME_MODE:
+                Debug(f"Bullets: {len(self.bullets)}", 10, 50, display)

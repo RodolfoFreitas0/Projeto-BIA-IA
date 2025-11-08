@@ -3,6 +3,8 @@ import math
 import random
 import scripts.core.settings as settings
 
+from scripts.headless.rectangle import Rectangle
+
 class PhysicsEntity:
 
     # Inicializar a entidade
@@ -20,7 +22,33 @@ class PhysicsEntity:
         self.HP = 1
         self.alive = True
 
+    def update_logic(self, movement=(0, 0), angle=0):
+        
+        self.angle += angle
+        self.angle %= 360
+        self.angle_rad = math.radians(self.angle)
+        
+        if movement[0] > 0:
+            self.angle += random.uniform(-0.3, 0.3)
+            self.speed = min(self.speed + self.acc, self.max_speed)
+        else:
+            self.speed *= self.friction
+        if movement[0] < 0:
+            self.speed = max(self.speed - 0.02, -0.2)
+
+        dx =  math.sin(self.angle_rad) * self.speed
+        dy = -math.cos(self.angle_rad) * self.speed
+        
+        self.pos[1] += dx
+        self.pos[0] += dy
+
+        if self.HP <= 0:
+            self.alive = False
+
     def render(self, surf, offset=(0, 0)):
+        if not settings.PYGAME_MODE:
+            return
+        
         scaled_image = pygame.transform.scale(self.game.assets[self.type], (self.size[0] * 6, self.size[1] * 6))
 
         if self.type == "enemy":
@@ -43,30 +71,17 @@ class PhysicsEntity:
             pygame.draw.rect(surf, color, self.rect().move(-offset[0], -offset[1]), 1)
     
     def rect(self):
-        return pygame.Rect(
-            self.pos[0] - self.size[0] - 2,
-            self.pos[1] - (self.size[1] * 2 - 1),
-            self.size[1] * 4,
-            self.size[1] * 4
-        )
-
-    def update(self, movement=(0, 0), angle=0):
-        
-        self.angle += angle
-        self.angle %= 360
-
-        self.angle_rad = math.radians(self.angle)
-        
-        if movement[0] > 0:
-            self.angle += random.uniform(-0.3, 0.3)
-            self.speed = min(self.speed + self.acc, self.max_speed)
+        if settings.PYGAME_MODE == True:
+            return pygame.Rect(
+                self.pos[0] - self.size[0] - 2,
+                self.pos[1] - (self.size[1] * 2 - 1),
+                self.size[1] * 4,
+                self.size[0] * 4
+            )
         else:
-            self.speed *= self.friction
-        if movement[0] < 0:
-            self.speed = max(self.speed - 0.02, -0.2)
-
-        dx =  math.sin(self.angle_rad) * self.speed
-        dy = -math.cos(self.angle_rad) * self.speed
-        
-        self.pos[1] += dx
-        self.pos[0] += dy
+            return Rectangle(
+                self.pos[0] - self.size[0] - 2,
+                self.pos[1] - (self.size[1] * 2 - 1),
+                self.size[1] * 4,
+                self.size[0] * 4
+            )

@@ -26,6 +26,8 @@ class Enemy(PhysicsEntity):
             self.pos[1] + math.sin(self.angle_rad) * 6000
         )
         
+        self.HP = 1
+
         self.acc = 10
 
     @classmethod
@@ -88,7 +90,7 @@ class Enemy(PhysicsEntity):
                 self.alive = False
 
     
-    def update(self, surf, scroll):
+    def update_logic(self, surf, scroll):
         
         if self.side == 0 or self.side == 2:
             self.max_speed = 3
@@ -103,12 +105,44 @@ class Enemy(PhysicsEntity):
 
         self.outbounds(scroll, self.screenH, self.screenW)
         
-        super().update(movement=(1,0))
+        super().update_logic(movement=(1,0))
 
-        if settings.DEBUG_MODE:
+        if settings.DEBUG_MODE and settings.PYGAME_MODE:
             pygame.draw.line(
                 surf, (255, 0, 0),
                 (self.pos[0] - scroll[0], self.pos[1] - scroll[1]),
                 (self.final_pos[0] -  scroll[0], self.final_pos[1] - scroll[1]),
                 1
             )
+class EnemyManager:
+        def __init__(self):
+            self.enemies = []
+            
+        def add(self, enemy):
+            self.enemies.append(enemy)
+
+        def update_logic(self, display, scroll, player):
+            for enemy in self.enemies[:]:
+                enemy.update_logic(display, scroll)
+                enemy.render(display, offset=scroll)
+                
+                # Remove inimigo caso ele morra
+                if not enemy.alive:
+                    self.enemies.remove(enemy)
+                    continue
+
+                    # Gameover caso o jogador toque no inimigo
+                if settings.DEBUG_MODE == False:
+                    if enemy.rect().colliderect(player.rect()):
+                        print("Colided")
+                        player.HP -= 1
+                        self.enemies.remove(enemy)
+                else:
+                    if enemy.rect().colliderect(player.rect()):
+                        print("Colided")
+                        self.enemies.remove(enemy)
+
+                
+            self.enemy_count = len(self.enemies)
+            if self.enemy_count > settings.MAX_ENEMIES:
+                self.enemies.clear()
