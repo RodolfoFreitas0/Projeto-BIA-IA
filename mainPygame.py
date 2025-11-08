@@ -117,7 +117,7 @@ class PygameGame:
 
                 if self.inputCTRL.shooting and self.cooldown >= 100:
                     bullet_pos = self.player.rect().center
-                    bullet_size = (self.assets["bullet"].get_width() / 6, self.assets["bullet"].get_height() / 6)
+                    bullet_size = (2, 2)
                     new_bullet = Bullet(self, bullet_pos, bullet_size)
                     self.bullet_manager.add(new_bullet)
                     self.cooldown = 0

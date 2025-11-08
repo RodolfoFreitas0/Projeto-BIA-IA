@@ -1,7 +1,10 @@
+from ast import Return
 import pygame
 import math
 import random
 import scripts.core.settings as settings
+
+from scripts.headless.rectangle import Rectangle
 
 class PhysicsEntity:
 
@@ -43,12 +46,20 @@ class PhysicsEntity:
             pygame.draw.rect(surf, color, self.rect().move(-offset[0], -offset[1]), 1)
     
     def rect(self):
-        return pygame.Rect(
-            self.pos[0] - self.size[0] - 2,
-            self.pos[1] - (self.size[1] * 2 - 1),
-            self.size[1] * 4,
-            self.size[1] * 4
-        )
+        if settings.PYGAME_MODE == True:
+            return pygame.Rect(
+                self.pos[0] - self.size[0] - 2,
+                self.pos[1] - (self.size[1] * 2 - 1),
+                self.size[1] * 4,
+                self.size[0] * 4
+            )
+        else:
+            return Rectangle(
+                self.pos[0] - self.size[0] - 2,
+                self.pos[1] - (self.size[1] * 2 - 1),
+                self.size[1] * 4,
+                self.size[0] * 4
+            )
 
     def update(self, movement=(0, 0), angle=0):
         

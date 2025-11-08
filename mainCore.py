@@ -4,14 +4,8 @@ from scripts.entities import Player
 from scripts.entities import Bullet, BulletManager
 from scripts.entities import EnemyManager
 
-from scripts.utills.loader import load_img, load_imgs
-from scripts.utills.debug import Debug
-
-from scripts.visuals.clouds import Clouds
-
 from scripts.core.camera import Camera
 from scripts.core.events import handle_events
-from scripts.core.hud import HUD
 from scripts.core.controller import InputController
 
 import scripts.core.settings as settings
@@ -22,8 +16,9 @@ class CoreGame:
         self.game_active = True
         self.running = True
 
-        self.time = 0
-        self.clock = self.time.time()
+        self.last_time = time.time()
+        self.spawn_timer = 0
+        self.score_timer - 0
 
         self.display_width = self.display.get_width()
         self.display_height = self.display.get_height()
@@ -32,11 +27,13 @@ class CoreGame:
 
         #Spawn dos inimigos
         self.enemy_manager = EnemyManager()
-        pygame.time.set_timer(settings.SPAWN_EVENT, settings.SPAWN_TIME)
+        
+        spawntime = settings.SPAWN_TIME
 
         self.score = 0
         self.highscore = 0
-        pygame.time.set_timer(settings.SCORE_EVENT, settings.SCORE_TIME)
+
+        scoretime = settings.SCORE_TIME
 
         self.player = Player(self, settings.PLAYER_START_POS, settings.PLAYER_SPEED)
         self.player.width = 32
@@ -49,7 +46,7 @@ class CoreGame:
 
     def reset(self):
         self.enemy_manager.enemies.clear()
-        pygame.time.set_timer(settings.SPAWN_EVENT, settings.SPAWN_TIME)
+        scoretime = settings.SCORE_TIME
 
         self.movement = [False, False]
         self.rotation = [False, False]
@@ -69,13 +66,23 @@ class CoreGame:
             handle_events(self, self.inputCTRL)        
             if self.game_active == True:
 
+                now = time.time()
+                delta = now - self.last_time
+                self.last_time = now
+
+                self.spawn_timer += delta
+                self.score_timer += delta
+
+                if self.spawn_timer >= settings.SPAWN_TIME:
+                    self.spawn_timer = 0
+                    self.enemy_manager.spawn_enemy()
+                
+                if self.spawn_timer >= settings.SCORE_TIME:
+                    self.score_timer = 0
+                    self.score += 1
+
                 self.CAM.update()
                 self.render_scroll = self.CAM.get_offset()
-
-                self.display.blit(self.assets["background"], (0, 0))
-
-                self.clouds.update()
-                self.clouds.render(self.display, offset=self.render_scroll)
             
                 rotation = (self.rotation[0] - self.rotation[1])
                 
@@ -97,7 +104,7 @@ class CoreGame:
 
                 if self.player.shooting == True and self.cooldown >= 100:
                     bullet_pos = self.player.rect().center
-                    bullet_size = (self.assets["bullet"].get_width() / 6, self.assets["bullet"].get_height() / 6)
+                    bullet_size = (2, 2)
                     new_bullet = Bullet(self, bullet_pos, bullet_size)
                     self.bullet_manager.add(new_bullet)
                     self.cooldown = 0
@@ -108,6 +115,6 @@ class CoreGame:
                     self.game_active = False
 
             else:
-                handle_events(self)
+                handle_events(self, self.inputCTRL)
 
-            self.clock.tick(60)
+            time.sleep(1/60)
