@@ -40,14 +40,26 @@ class BulletManager:
                     continue
 
                 for enemy in self.enemies:
-                    if enemy.alive and bullet.rect().colliderect(enemy.rect()):
-                        print("Bala colidiu com inimigo!")
-                        enemy.alive = False
-                        bullet.alive = False
-                        self.bullets.remove(bullet)
-                        break
+                    if settings.PYGAME_MODE == True:
+                        if enemy.alive and bullet.rect().colliderect(enemy.rect()):
+                            print("Bala colidiu com inimigo!")
+                            enemy.alive = False
+                            bullet.alive = False
+                            self.bullets.remove(bullet)
+                            break
+                    else:
+                         if enemy.alive and bullet.rect.colide(enemy.rect()):
+                            print("Bala colidiu com inimigo!")
+                            enemy.alive = False
+                            bullet.alive = False
+                            self.bullets.remove(bullet)
+                            break
+                                
         
         def render(self, display, scroll):
+            if not settings.PYGAME_MODE:
+                return
+
             for bullet in self.bullets:    
                 bullet.render(display, scroll)
 

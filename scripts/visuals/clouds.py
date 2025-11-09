@@ -21,5 +21,8 @@ class Clouds:
             cloud.update()
     
     def render(self, surf, offset=(0, 0)):
+        if not settings.PYGAME_MODE:
+            return
+
         for i, cloud in enumerate(self.clouds):
             cloud.render(surf, offset=offset)

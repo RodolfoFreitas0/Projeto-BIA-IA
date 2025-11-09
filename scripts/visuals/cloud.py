@@ -1,4 +1,5 @@
 import pygame
+from scripts.core import settings
 
 class Cloud:
     def __init__(self, pos, img, speed, depth):
@@ -16,6 +17,9 @@ class Cloud:
         self.pos[0] += self.speed * self.depth
     
     def render(self, surf, offset=(0, 0)):
+        if not settings.PYGAME_MODE:
+            return
+
         render_pos = (
             self.pos[0] - offset[0] * self.depth,
             self.pos[1] - offset[1] * self.depth

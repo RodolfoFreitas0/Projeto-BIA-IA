@@ -1,4 +1,5 @@
 import pygame
+import scripts.core.settings as settings
 
 class HUD:
     def __init__(self, game):

@@ -1,9 +1,12 @@
+
+import dis
 import pygame
 import random
 import math
 
 import scripts.core.settings as settings
 from .physics_entity import PhysicsEntity
+from scripts.headless.rectangle import Rectangle
 
 class Enemy(PhysicsEntity):
 
@@ -90,7 +93,7 @@ class Enemy(PhysicsEntity):
                 self.alive = False
 
     
-    def update_logic(self, surf, scroll):
+    def update_logic(self, scroll):
         
         if self.side == 0 or self.side == 2:
             self.max_speed = 3
@@ -106,14 +109,6 @@ class Enemy(PhysicsEntity):
         self.outbounds(scroll, self.screenH, self.screenW)
         
         super().update_logic(movement=(1,0))
-
-        if settings.DEBUG_MODE and settings.PYGAME_MODE:
-            pygame.draw.line(
-                surf, (255, 0, 0),
-                (self.pos[0] - scroll[0], self.pos[1] - scroll[1]),
-                (self.final_pos[0] -  scroll[0], self.final_pos[1] - scroll[1]),
-                1
-            )
 class EnemyManager:
         def __init__(self):
             self.enemies = []
@@ -121,28 +116,42 @@ class EnemyManager:
         def add(self, enemy):
             self.enemies.append(enemy)
 
-        def update_logic(self, display, scroll, player):
+        def update_logic(self, scroll, player):
             for enemy in self.enemies[:]:
-                enemy.update_logic(display, scroll)
-                enemy.render(display, offset=scroll)
+                enemy.update_logic(scroll)
                 
-                # Remove inimigo caso ele morra
                 if not enemy.alive:
                     self.enemies.remove(enemy)
                     continue
 
-                    # Gameover caso o jogador toque no inimigo
-                if settings.DEBUG_MODE == False:
+                if settings.PYGAME_MODE == True:
                     if enemy.rect().colliderect(player.rect()):
                         print("Colided")
-                        player.HP -= 1
+                        if not settings.DEBUG_MODE:
+                            player.HP -= 1
                         self.enemies.remove(enemy)
                 else:
-                    if enemy.rect().colliderect(player.rect()):
+                    if enemy.rect.colide(player.rect()):
                         print("Colided")
                         self.enemies.remove(enemy)
-
                 
             self.enemy_count = len(self.enemies)
             if self.enemy_count > settings.MAX_ENEMIES:
                 self.enemies.clear()
+
+        def render(self, display, scroll):
+            if not settings.PYGAME_MODE:
+                return
+            
+            for enemy in self.enemies:
+
+                if settings.DEBUG_MODE:
+                    pygame.draw.line(
+                        display, (255, 0, 0),
+                        (enemy.pos[0] - scroll[0], enemy.pos[1] - scroll[1]),
+                        (enemy.final_pos[0] -  scroll[0], enemy.final_pos[1] - scroll[1]),
+                        1
+                    )
+ 
+                enemy.render(display, offset=scroll)
+            

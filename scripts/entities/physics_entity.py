@@ -71,7 +71,7 @@ class PhysicsEntity:
             pygame.draw.rect(surf, color, self.rect().move(-offset[0], -offset[1]), 1)
     
     def rect(self):
-        if settings.PYGAME_MODE == True:
+        if settings.PYGAME_MODE:
             return pygame.Rect(
                 self.pos[0] - self.size[0] - 2,
                 self.pos[1] - (self.size[1] * 2 - 1),
