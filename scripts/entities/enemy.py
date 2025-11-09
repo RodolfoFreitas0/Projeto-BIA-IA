@@ -6,17 +6,16 @@ import math
 
 import scripts.core.settings as settings
 from .physics_entity import PhysicsEntity
-from scripts.headless.rectangle import Rectangle
 
 class Enemy(PhysicsEntity):
 
-    def __init__(self, game, scroll, screen_width, screen_height, size):
-        
-        pos, side = self.spawn_pos(scroll, screen_width, screen_height)
+    def __init__(self, game, scroll, size):
+
+        pos, side = self.spawn_pos(scroll, settings.DISPLAY_SIZE[0], settings.DISPLAY_SIZE[1])
         super().__init__(game, "enemy", pos, size)
 
-        self.screenW = screen_width
-        self.screenH = screen_height
+        self.screenW = settings.DISPLAY_SIZE[0]
+        self.screenH = settings.DISPLAY_SIZE[1]
 
         self.side = side
         self.enemies = []
@@ -124,17 +123,12 @@ class EnemyManager:
                     self.enemies.remove(enemy)
                     continue
 
-                if settings.PYGAME_MODE == True:
-                    if enemy.rect().colliderect(player.rect()):
-                        print("Colided")
-                        if not settings.DEBUG_MODE:
-                            player.HP -= 1
-                        self.enemies.remove(enemy)
-                else:
-                    if enemy.rect.colide(player.rect()):
-                        print("Colided")
-                        self.enemies.remove(enemy)
-                
+                if enemy.rect().colliderect(player.rect()):
+                    print("Colided")
+                    if not settings.DEBUG_MODE:
+                        player.HP -= 1
+                    self.enemies.remove(enemy)
+
             self.enemy_count = len(self.enemies)
             if self.enemy_count > settings.MAX_ENEMIES:
                 self.enemies.clear()

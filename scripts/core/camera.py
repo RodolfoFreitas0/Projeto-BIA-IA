@@ -5,7 +5,7 @@ class Camera:
         self.target = target
         self.display_width, self.display_height = display_size
 
-    def update(self):
+    def update_logic(self):
         
         if self.target.pos[0] >= 50 + self.scroll[0] + self.display_width / 2:
             self.scroll[0] += (self.target.rect().centerx - self.display_width / 2 - self.scroll[0]) / 20

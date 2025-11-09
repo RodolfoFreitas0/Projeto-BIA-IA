@@ -59,7 +59,7 @@ def handle_events(game, controller):
                 elif event.type == settings.SPAWN_EVENT:
                     from scripts.entities.enemy import Enemy
 
-                    enemy = Enemy(game, game.render_scroll, settings.DISPLAY_SIZE[0], settings.DISPLAY_SIZE[1], (3, 3))
+                    enemy = Enemy(game, game.render_scroll, (3, 3))
                     game.enemy_manager.add(enemy)
                     
                     settings.SPAWN_TIME = max(500, settings.SPAWN_TIME - 50)

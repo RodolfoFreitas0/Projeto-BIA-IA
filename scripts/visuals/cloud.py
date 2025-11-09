@@ -14,6 +14,9 @@ class Cloud:
         self.image = pygame.transform.scale(self.img, (w, h))
 
     def update(self):
+        if not settings.PYGAME_MODE:
+            return
+        
         self.pos[0] += self.speed * self.depth
     
     def render(self, surf, offset=(0, 0)):

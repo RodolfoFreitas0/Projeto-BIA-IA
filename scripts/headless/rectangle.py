@@ -12,6 +12,7 @@ class Rectangle:
         self.width = width
         self.height = height
     
+    @property
     def center(self):
         cx = self.x + self.width / 2
         cy = self.y + self . height / 2
@@ -21,7 +22,8 @@ class Rectangle:
         self.x = self.owner.pos[0] + self.offset_x
         self.y = self.owner.pos[1] + self.offset_y
 
-    def colide(self, other):
+    @property
+    def colliderect(self, other):
         return not (
             self.x + self.width < other.x or
             self.x > other.x + other.width or

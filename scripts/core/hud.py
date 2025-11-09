@@ -8,6 +8,9 @@ class HUD:
         self.font_big = pygame.font.SysFont("Sans", 15)
     
     def draw_score(self, surf):
+        if not settings.PYGAME_MODE:
+            return
+        
         minutos = self.game.score // 60
         segundos = self.game.score % 60
 
@@ -22,6 +25,9 @@ class HUD:
         surf.blit(score_text, score_rect)
     
     def draw_hp(self, surf):
+        if not settings.PYGAME_MODE:
+            return
+        
         hp_text = self.font_small.render(f"hp: {self.game.player.HP}", False, "White")
         hp_rect = hp_text.get_rect()
 
@@ -33,6 +39,9 @@ class HUD:
         surf.blit(hp_text, hp_rect)
 
     def draw_gameover(self, surf):
+        if not settings.PYGAME_MODE:
+            return
+        
         gameover_text = self.font_big.render("GAME OVER!", False, "White")
         gameover_rect = gameover_text.get_rect()
 
@@ -45,6 +54,9 @@ class HUD:
         surf.blit(gameover_text, gameover_rect)
 
     def draw_highscore(self, surf):
+        if not settings.PYGAME_MODE:
+            return
+        
         minutosH = self.game.highscore // 60
         segundosH = self.game.highscore % 60
 
