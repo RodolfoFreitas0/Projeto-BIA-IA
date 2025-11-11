@@ -15,10 +15,6 @@ class Bullet(PhysicsEntity):
     def update_logic(self, scroll):
         super().update_logic(movement=(1, 0))
 
-
-
-
-
 class BulletManager:
         def __init__(self, enemies):
             self.bullets = []
@@ -46,8 +42,12 @@ class BulletManager:
                         bullet.alive = False
                         self.bullets.remove(bullet)
                         break
+                                
         
         def render(self, display, scroll):
+            if not settings.PYGAME_MODE:
+                return
+
             for bullet in self.bullets:    
                 bullet.render(display, scroll)
 

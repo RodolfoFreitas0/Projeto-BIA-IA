@@ -71,17 +71,10 @@ class PhysicsEntity:
             pygame.draw.rect(surf, color, self.rect().move(-offset[0], -offset[1]), 1)
     
     def rect(self):
-        if settings.PYGAME_MODE == True:
-            return pygame.Rect(
-                self.pos[0] - self.size[0] - 2,
-                self.pos[1] - (self.size[1] * 2 - 1),
-                self.size[1] * 4,
-                self.size[0] * 4
-            )
-        else:
-            return Rectangle(
-                self.pos[0] - self.size[0] - 2,
-                self.pos[1] - (self.size[1] * 2 - 1),
-                self.size[1] * 4,
-                self.size[0] * 4
-            )
+        return Rectangle(
+            self,
+            -6,
+            -6,
+            self.size[1] * 4,
+            self.size[0] * 4
+        )

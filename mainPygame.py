@@ -1,4 +1,3 @@
-from pydoc import render_doc
 import pygame
 
 from scripts.entities import Player
@@ -89,10 +88,11 @@ class PygameGame:
             handle_events(self, self.inputCTRL)        
             if self.game_active == True:
 
-                self.CAM.update()
+                self.CAM.update_logic()
                 self.render_scroll = self.CAM.get_offset()
 
-                self.display.blit(self.assets["background"], (0, 0))
+                if settings.PYGAME_MODE:
+                    self.display.blit(self.assets["background"], (0, 0))
 
                 self.clouds.update()
                 self.clouds.render(self.display, offset=self.render_scroll)
@@ -109,12 +109,13 @@ class PygameGame:
                 if self.score > self.highscore:
                      self.highscore = self.score
 
-                self.enemy_manager.update_logic(self.display, self.render_scroll, self.player)
+                self.enemy_manager.update_logic(self.render_scroll, self.player)
+                self.enemy_manager.render(self.display, self.render_scroll)
+
                 self.bullet_manager.update_logic(self.render_scroll)
                 self.bullet_manager.render(self.display, self.render_scroll)
 
                 self.player.update_logic(((self.inputCTRL.movement[1] - self.inputCTRL.movement[0]), 0), rotation)
-                
                 self.player.render(self.display, offset=self.render_scroll)
 
                 if self.inputCTRL.shooting and self.cooldown >= 100:
@@ -136,19 +137,34 @@ class PygameGame:
                 handle_events(self, self.inputCTRL)
 
                 self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0])
+                
+                if settings.PYGAME_MODE:
+                    self.display.blit(self.assets["background"], (0, 0))
 
-                self.display.blit(self.assets["background"], (0, 0))
                 self.clouds.render(self.display, offset=self.render_scroll)
 
                 self.HUD.draw_gameover(self.display)
                 self.HUD.draw_highscore(self.display)
             
-            if settings.DEBUG_MODE:
+            if settings.DEBUG_MODE and settings.PYGAME_MODE:
                 Debug(f"FPS: {self.clock.get_fps():.1f}", 10, 10, self.display)
                 Debug(f"Enemies: {self.enemy_manager.enemy_count}", 10, 20, self.display)
                 Debug(f"CAM: (X: {self.CAM.scroll[0]:.2f}, Y: {self.CAM.scroll[1]:.2f})", 10, 30, self.display)
                 Debug(f"POS: (X: {self.player.pos[0]:.2f}, Y: {self.player.pos[1]:.2f})", 10, 40, self.display)
 
-            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
-            pygame.display.update() 
-            self.clock.tick(60)
+            if settings.PYGAME_MODE:
+                self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
+                pygame.display.update() 
+                self.clock.tick(60)
+            else:
+                pass
+
+def __main__():
+    game = PygameGame()
+    game.run()
+
+
+# Chamando a def que inicia o jogo
+if __name__ == "__main__":
+    __main__()
+
