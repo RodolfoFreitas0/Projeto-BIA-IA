@@ -112,7 +112,7 @@ class PygameGame:
                 self.enemy_manager.update_logic(self.render_scroll, self.player)
                 self.enemy_manager.render(self.display, self.render_scroll)
 
-                self.bullet_manager.update_logic(self.render_scroll)
+                self.bullet_manager.update_logic()
                 self.bullet_manager.render(self.display, self.render_scroll)
 
                 self.player.update_logic(((self.inputCTRL.movement[1] - self.inputCTRL.movement[0]), 0), rotation)
