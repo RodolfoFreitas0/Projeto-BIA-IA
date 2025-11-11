@@ -15,10 +15,6 @@ class Bullet(PhysicsEntity):
     def update_logic(self, scroll):
         super().update_logic(movement=(1, 0))
 
-
-
-
-
 class BulletManager:
         def __init__(self, enemies):
             self.bullets = []

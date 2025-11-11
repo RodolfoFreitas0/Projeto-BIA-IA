@@ -1,10 +1,10 @@
 
-import dis
 import pygame
 import random
 import math
 
 import scripts.core.settings as settings
+from scripts.headless.rectangle import Rectangle
 from .physics_entity import PhysicsEntity
 
 class Enemy(PhysicsEntity):
@@ -31,6 +31,8 @@ class Enemy(PhysicsEntity):
         self.HP = 1
 
         self.acc = 10
+
+        # self.rect = Rectangle(self, 0, 0, self.size[0], self.size[1])
 
     @classmethod
     def spawn_pos(cls, scroll, screen_width, screen_height):
