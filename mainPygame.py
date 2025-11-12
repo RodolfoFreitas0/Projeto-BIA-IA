@@ -1,4 +1,5 @@
 import pygame
+import time
 
 from scripts.entities import Player
 from scripts.entities import Bullet, BulletManager
@@ -6,6 +7,7 @@ from scripts.entities import EnemyManager
 
 from scripts.utills import load_img, load_imgs
 from scripts.utills import Debug
+from scripts.utills import SimpleClock
 
 from scripts.visuals import Clouds
 
@@ -19,53 +21,54 @@ import scripts.core.settings as settings
 class PygameGame:
     def __init__(self):
 
-        pygame.init()
-        pygame.display.set_caption(settings.CAPTION)
-        self.screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
-        # pygame.display.toggle_fullscreen()
-        self.display = pygame.Surface(settings.DISPLAY_SIZE)
+        if settings.PYGAME_MODE:
+            pygame.init()
+            pygame.display.set_caption(settings.CAPTION)
+            self.screen = pygame.display.set_mode((settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
+            # pygame.display.toggle_fullscreen()
+            self.display = pygame.Surface(settings.DISPLAY_SIZE)
+            self.clock = pygame.time.Clock()
+        else:
+            self.screen = None
+            self.display = None
+            self.clock = SimpleClock()
 
         self.game_active = True
         self.running = True
 
-        self.clock = pygame.time.Clock()
-
-        self.display_width = self.display.get_width()
-        self.display_height = self.display.get_height()
+        self.display_width = settings.DISPLAY_SIZE[0]
+        self.display_height = settings.DISPLAY_SIZE[1]
 
         self.inputCTRL = InputController()
 
         # Carregar assets
-        self.assets = {
-            "player": pygame.transform.rotate(load_img("kenney_pixelshmup/Ships/Ship_0000.png"), 0),
-            "enemy": pygame.transform.rotate(load_img("kenney_pixelshmup/Tiles/tile_0012.png"), 0),
-            "bullet": pygame.transform.rotate(load_img("kenney_pixelshmup/Tiles/tile_0009.png"), 0),
-            "background": load_img("background.png"),
-            "clouds": load_imgs("clouds")
-        } 
+        if settings.PYGAME_MODE:
+            self.assets = {
+                "player": pygame.transform.rotate(load_img("kenney_pixelshmup/Ships/Ship_0000.png"), 0),
+                "enemy": pygame.transform.rotate(load_img("kenney_pixelshmup/Tiles/tile_0012.png"), 0),
+                "bullet": pygame.transform.rotate(load_img("kenney_pixelshmup/Tiles/tile_0009.png"), 0),
+                "background": load_img("background.png"),
+                "clouds": load_imgs("clouds")
+            } 
+            self.assets["background"] = pygame.transform.scale(self.assets["background"], settings.DISPLAY_SIZE)
+        else:
+            self.assets = {}
 
-        self.assets["background"] = pygame.transform.scale(self.assets["background"], settings.DISPLAY_SIZE)
-
-        #Spawn dos inimigos
         self.enemy_manager = EnemyManager()
-        pygame.time.set_timer(settings.SPAWN_EVENT, settings.SPAWN_TIME)
-
-        self.score = 0
-        self.highscore = 0
-        pygame.time.set_timer(settings.SCORE_EVENT, settings.SCORE_TIME)
-
-        self.clouds = Clouds(self.assets["clouds"], settings.CLOUD_COUNT) 
-
-        self.player = Player(self, settings.PLAYER_START_POS, settings.PLAYER_SPEED)
-        self.player.width = self.assets["player"].get_width()
-
         self.bullet_manager = BulletManager(self.enemy_manager.enemies)
-
+        self.player = Player(self, settings.PLAYER_START_POS, settings.PLAYER_SPEED)
+       
         self.HUD = HUD(self)
-        
         self.CAM = Camera(self.player, (self.display_width, self.display_height))
+        self.clouds = Clouds(self.assets["clouds"], settings.CLOUD_COUNT) if settings.PYGAME_MODE else None
         self.scroll = [0, 0]
         self.cooldown = 100
+        self.score = 0
+        self.highscore = 0
+
+        if settings.PYGAME_MODE:
+            pygame.time.set_timer(settings.SPAWN_EVENT, settings.SPAWN_TIME)
+            pygame.time.set_timer(settings.SCORE_EVENT, settings.SCORE_TIME)
 
     def reset(self):
         self.enemy_manager.enemies.clear()
@@ -94,13 +97,15 @@ class PygameGame:
                 if settings.PYGAME_MODE:
                     self.display.blit(self.assets["background"], (0, 0))
 
-                self.clouds.update()
-                self.clouds.render(self.display, offset=self.render_scroll)
+                if settings.PYGAME_MODE:
+                    self.clouds.update()
+                    self.clouds.render(self.display, offset=self.render_scroll)
+                
 
                 rotation = self.inputCTRL.rotation_value()
                 
                 player_screen_x = self.player.pos[0] - self.render_scroll[0]
-                if player_screen_x + self.player.width + 40 < 0:
+                if player_screen_x + 80 < 0:
                     print("Saiu da tela")
                     self.player.HP -= 1
                     self.player.pos[0] = self.render_scroll[0] + 40
@@ -112,7 +117,7 @@ class PygameGame:
                 self.enemy_manager.update_logic(self.render_scroll, self.player)
                 self.enemy_manager.render(self.display, self.render_scroll)
 
-                self.bullet_manager.update_logic(self.render_scroll)
+                self.bullet_manager.update_logic()
                 self.bullet_manager.render(self.display, self.render_scroll)
 
                 self.player.update_logic(((self.inputCTRL.movement[1] - self.inputCTRL.movement[0]), 0), rotation)
@@ -134,17 +139,14 @@ class PygameGame:
                 self.HUD.draw_hp(self.display)
 
             else:
-                handle_events(self, self.inputCTRL)
 
-                self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0])
+                self.scroll[0] += (self.player.rect().centerx - self.display_width / 2 - self.scroll[0])
                 
                 if settings.PYGAME_MODE:
                     self.display.blit(self.assets["background"], (0, 0))
-
-                self.clouds.render(self.display, offset=self.render_scroll)
-
-                self.HUD.draw_gameover(self.display)
-                self.HUD.draw_highscore(self.display)
+                    self.clouds.render(self.display, offset=self.render_scroll)
+                    self.HUD.draw_gameover(self.display)
+                    self.HUD.draw_highscore(self.display)
             
             if settings.DEBUG_MODE and settings.PYGAME_MODE:
                 Debug(f"FPS: {self.clock.get_fps():.1f}", 10, 10, self.display)
@@ -157,7 +159,13 @@ class PygameGame:
                 pygame.display.update() 
                 self.clock.tick(60)
             else:
-                pass
+                self.clock.tick(60) 
+                if settings.DEBUG_MODE:
+                    print(f"Fps: {self.clock.get_fps():.1f}")
+                    print(f"POS: (X: {self.player.pos[0]:.2f}, Y: {self.player.pos[1]:.2f})")
+                    print(f"Hp: {self.player.HP}")
+
+                    settings.DEBUG_MODE == False
 
 def __main__():
     game = PygameGame()
@@ -167,4 +175,3 @@ def __main__():
 # Chamando a def que inicia o jogo
 if __name__ == "__main__":
     __main__()
-

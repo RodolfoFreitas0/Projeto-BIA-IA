@@ -32,9 +32,11 @@ class Rectangle:
 
     def colliderect(self, other):
         return not (
-            (self.x + self.width < other.x or
-            self.x > other.x + other.width) and
-            (self.y + self.height < other.y or
-            self.y > other.y + other.height) 
+            self.x + self.width < other.x or
+            self.x > other.x + other.width or
+            self.y + self.height < other.y or
+            self.y > other.y + other.height 
         )
     
+    def move(self, dx, dy):
+        return (self.x + dx, self.y + dy, self.width, self.height)

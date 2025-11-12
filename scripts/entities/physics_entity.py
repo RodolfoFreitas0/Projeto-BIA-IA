@@ -9,11 +9,14 @@ class PhysicsEntity:
 
     # Inicializar a entidade
     def __init__(self, game, e_type, pos, size):
+
         self.game = game
         self.type = e_type
         self.pos = list(pos)
+
         self.size = size
         self.angle = 180
+
         self.speed = 0
         self.max_speed = 2
         self.acc = 0.1
@@ -22,8 +25,11 @@ class PhysicsEntity:
         self.HP = 1
         self.alive = True
 
+        self.hitbox_offset = (-6, -6)
+        self.hitbox_mult = (4, 4)
+
     def update_logic(self, movement=(0, 0), angle=0):
-        
+
         self.angle += angle
         self.angle %= 360
         self.angle_rad = math.radians(self.angle)
@@ -71,10 +77,18 @@ class PhysicsEntity:
             pygame.draw.rect(surf, color, self.rect().move(-offset[0], -offset[1]), 1)
     
     def rect(self):
-        return Rectangle(
-            self,
-            -6,
-            -6,
-            self.size[1] * 4,
-            self.size[0] * 4
-        )
+        if settings.PYGAME_MODE == True:
+            return pygame.Rect(
+                self.pos[0] - self.size[0] - 2,
+                self.pos[1] - (self.size[1] * 2 - 1),
+                self.size[1] * 4,
+                self.size[0] * 4
+            )
+        else:
+            return Rectangle(
+                self,
+                self.hitbox_offset[0],
+                self.hitbox_offset[1],
+                self.size[1] * self.hitbox_mult[0],
+                self.size[0] * self.hitbox_mult[1]
+            )

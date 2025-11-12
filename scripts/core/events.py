@@ -60,7 +60,7 @@ def handle_events(game, controller):
                     from scripts.entities.enemy import Enemy
 
                     enemy = Enemy(game, game.render_scroll, (3, 3))
-                    # game.enemy_manager.add(enemy)
+                    game.enemy_manager.add(enemy)
                     
                     settings.SPAWN_TIME = max(500, settings.SPAWN_TIME - 50)
                     pygame.time.set_timer(settings.SPAWN_EVENT, settings.SPAWN_TIME)

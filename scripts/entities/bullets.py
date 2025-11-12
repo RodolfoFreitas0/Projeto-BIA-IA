@@ -10,9 +10,10 @@ class Bullet(PhysicsEntity):
         self.speed = self.max_speed = 6
         self.angle = game.player.angle
         self.alive = True
-        self.lifetime = 60
+        self.lifetime = 120
+        self.hitbox_offset = (-3, -3)
 
-    def update_logic(self, scroll):
+    def update_logic(self):
         super().update_logic(movement=(1, 0))
 
 class BulletManager:
@@ -23,9 +24,9 @@ class BulletManager:
         def add(self, bullet):
             self.bullets.append(bullet)
 
-        def update_logic(self, scroll):
+        def update_logic(self):
             for bullet in self.bullets[:]:
-                bullet.update_logic(scroll)
+                bullet.update_logic()
 
                 bullet.lifetime -= 1
                 if bullet.lifetime <= 0:
