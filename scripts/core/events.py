@@ -32,9 +32,17 @@ def handle_events(game, controller):
                         controller.movement[1] = True
                     if event.key == pygame.K_s or event.key == pygame.K_DOWN:
                         controller.movement[0] = True
-                    
+
+                    if event.key == pygame.K_i:
+                        from scripts.entities.enemy import Enemy
+
+                        enemy = Enemy(game, game.render_scroll, (3, 3))
+                        game.enemy_manager.add(enemy)
+
+                        print(len(game.enemy_manager.enemies))
+
                     if event.key == pygame.K_b:
-                        if settings.DEBUG_MODE == True:
+                        if settings.DEBUG_MODE:
                             settings.DEBUG_MODE = False
                             print("Debug Mode: OFF")
                         else:
@@ -57,10 +65,10 @@ def handle_events(game, controller):
                         controller.movement[0] = False
                         
                 elif event.type == settings.SPAWN_EVENT:
-                    from scripts.entities.enemy import Enemy
+                    from scripts.entities.missile import Missile
 
-                    enemy = Enemy(game, game.render_scroll, (3, 3))
-                    game.enemy_manager.add(enemy)
+                    missile = Missile(game, game.render_scroll, (3, 3))
+                    game.missile_manager.add(missile)
                     
                     settings.SPAWN_TIME = max(500, settings.SPAWN_TIME - 50)
                     pygame.time.set_timer(settings.SPAWN_EVENT, settings.SPAWN_TIME)

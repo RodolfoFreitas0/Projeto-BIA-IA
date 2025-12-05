@@ -1,115 +1,114 @@
-
-import pygame
-import random
-import math
+from .physics_entity import PhysicsEntity
 
 import scripts.core.settings as settings
-from scripts.headless.rectangle import Rectangle
-from .physics_entity import PhysicsEntity
+import random
+import math
 
 class Enemy(PhysicsEntity):
 
     def __init__(self, game, scroll, size):
 
-        pos, side = self.spawn_pos(scroll, settings.DISPLAY_SIZE[0], settings.DISPLAY_SIZE[1])
+        pos, side = self.spawn(scroll, settings.DISPLAY_SIZE[0], settings.DISPLAY_SIZE[1])
         super().__init__(game, "enemy", pos, size)
-
-        self.screenW = settings.DISPLAY_SIZE[0]
-        self.screenH = settings.DISPLAY_SIZE[1]
-
+        
         self.side = side
-        self.enemies = []
 
-        self.angle = self.random_angle(side)
-        self.angle_rad = math.radians(self.angle)
+        self.scroll = scroll
 
-        self.final_pos = (
-            self.pos[0] - math.cos(self.angle_rad) * 6000,
-            self.pos[1] + math.sin(self.angle_rad) * 6000
-        )
+        self.angle = self.dif_angle(self.side)
         
         self.HP = 1
+        self.max_speed = 3
+        self.pos[0] = scroll[0] + settings.DISPLAY_SIZE[0] - 20
+        self.timer = 0
 
-        self.acc = 10
+        self.world_y = pos[1]
+        self.fixed_x_offset = settings.DISPLAY_SIZE[0] - 20
 
-        # self.rect = Rectangle(self, 0, 0, self.size[0], self.size[1])
+    def spawn(self, scroll, screen_width, screen_height):
+        side = random.randint(0, 2)
+        margem = 20
 
-    @classmethod
-    def spawn_pos(cls, scroll, screen_width, screen_height):
-        side = random.randint(0, 3)
-        # side = ?
-
-        x_centro = scroll[0] + (screen_width // 2)
-        y_centro = scroll[1] + (screen_height // 2)
-
-        margem = 100
-
+        if side == 0: #Topo
+            return [scroll[0] + screen_width - margem, margem + scroll[1]], side
+        
+        else: #Baixo 
+            return [scroll[0] + screen_width - margem, scroll[1] + screen_width - margem], side
+        
+    def dif_angle(self, side):
         if side == 0: # Topo
-            return [random.randint(
-                x_centro - (screen_width // 2), x_centro + (screen_width // 2)),
-                (y_centro - (screen_height // 2) - margem)], side
+            return 90
+        else: # Baixo
+            return -90
+
+    def update_logic(self, scroll, player):
+
+        if self.angle == 90: 
+            self.world_y += self.speed
+        else:
+            self.world_y -= self.speed
+
+        top = scroll[1] + 20
+        bottom = scroll[1] + settings.DISPLAY_SIZE[1] - 20
+
+        if self.world_y < top:
+            self.world_y = top
+            self.angle = 90
+
+        elif self.world_y > bottom:
+            self.world_y = bottom
+            self.angle = 270
+
+        self.pos[0] = scroll[0] + self.fixed_x_offset
+        self.pos[1] = self.world_y
+
+        # self.pos[0] = scroll[0] + settings.DISPLAY_SIZE[0] - 20
+
+        # top = scroll[1] + 20
+        # bottom = scroll[1] + settings.DISPLAY_SIZE[1] - 20
+
+        # self.angle %= 360
         
-        elif side == 1: # Direita
-            return [x_centro + (screen_width // 2) + margem,
-                    random.randint(y_centro - (screen_height // 2), y_centro + (screen_height //2))], side
+        #     # Player descendo
+        # if player.speed >= 1:
+        #     if 185 <= player.angle <= 355:
+        #         if self.angle == 90:   # Enemy subindo
+        #             self.speed = 1.5
+        #         else:
+        #             self.speed = 4
+
+        #     # Player subindo
+        #     elif 5 <= player.angle <= 175:
+        #         if self.angle == 270:  # Enemy descendo
+        #             self.speed = 1.5
+        #         else:
+        #             self.speed = 4
+
+        #     # Player indo frente/trás
+        #     elif player.angle <= 5 or 175 <= player.angle <= 185 or player.angle >= 355:
+        #             self.speed = 4.5
+        # else:
+        #     # Player parado
+        #     self.speed = 1.5
         
-        elif side == 2: # Baixo
-            return [random.randint(
-                x_centro - (screen_width // 2), x_centro + (screen_width // 2)),
-                y_centro + (screen_height //2)  + margem], side
+        # if self.pos[1] > bottom:
+        #     self.pos[1] = bottom - 10
+        #     self.angle = -self.angle
+
+        # elif self.pos[1] < top:
+        #     self.pos[1] = top + 10
+        #     self.angle = -self.angle
+
+        # if self.angle == 90:
+        #     self.pos[1] += self.speed
+        # else:
+        #     self.pos[1] -= self.speed
         
-        else: # Esquerda
-            return [x_centro - (screen_width // 2)  - margem,
-                    random.randint(y_centro -  (screen_height //2), y_centro + (screen_height // 2))], side
-    
-    def random_angle(self, side):
-
-        if side == 0:  # Topo
-            return random.uniform(105, 155)
-        elif side == 1:  # Direita
-            return random.uniform(335, 395) % 360
-        elif side == 2:  # Baixo
-            return random.uniform(215, 245)
-        else:  # Esquerda
-            return random.uniform(165, 195)
-
-    def outbounds(self, scroll, screen_width, screen_height):
-
-        x_centro = scroll[0] + (screen_width // 2)
-        y_centro = scroll[1] + (screen_height // 2)
-
-        margem = 400
-
-        if self.side == 0:
-            if self.pos[0] > x_centro + (screen_width // 2) + margem or self.pos[1] > y_centro + (screen_height // 2) + margem:
-                self.alive = False
-        elif self.side == 1:
-            if self.pos[0] < x_centro - (screen_width // 2) - margem or self.pos[1] < y_centro - (screen_height // 2) - margem or self.pos[1] > y_centro + (screen_height // 2) + margem :
-                self.alive = False
-        elif self.side == 2:
-            if self.pos[0] > x_centro + (screen_width // 2) + margem or self.pos[1] < y_centro - (screen_height // 2) - margem:
-                self.alive = False
-        elif self.side == 3:
-            if self.pos[0] > x_centro + (screen_width // 2) + margem or self.pos[1] < y_centro - (screen_height // 2) - margem or self.pos[1] > y_centro + (screen_height // 2) + margem:
-                self.alive = False
-
-    
-    def update_logic(self, scroll):
+        dx = player.pos[0] - self.pos[0]
+        dy = player.pos[1] - self.pos[1]
         
-        if self.side == 0 or self.side == 2:
-            self.max_speed = 3
-
-        if self.side == 1:
-            self.max_speed = 1.8
-
-        if self.side == 3:
-            self.max_speed = 4.5
-
-        self.angle += random.uniform(-0.3, 0.3)
-
-        self.outbounds(scroll, self.screenH, self.screenW)
-        
-        super().update_logic(movement=(1,0))
+        self.render_angle = math.degrees(math.atan2(dy, dx))
+              
 class EnemyManager:
         def __init__(self):
             self.enemies = []
@@ -118,8 +117,8 @@ class EnemyManager:
             self.enemies.append(enemy)
 
         def update_logic(self, scroll, player):
-            for enemy in self.enemies[:]:
-                enemy.update_logic(scroll)
+            for enemy in self.enemies:
+                enemy.update_logic(scroll, player)
                 
                 if not enemy.alive:
                     self.enemies.remove(enemy)
@@ -131,8 +130,8 @@ class EnemyManager:
                         player.HP -= 1
                     self.enemies.remove(enemy)
 
-            self.enemy_count = len(self.enemies)
-            if self.enemy_count > settings.MAX_ENEMIES:
+            self.missile_count = len(self.enemies)
+            if self.missile_count > settings.MAX_ENEMIES:
                 self.enemies.clear()
 
         def render(self, display, scroll):
@@ -140,14 +139,5 @@ class EnemyManager:
                 return
             
             for enemy in self.enemies:
-
-                if settings.DEBUG_MODE:
-                    pygame.draw.line(
-                        display, (255, 0, 0),
-                        (enemy.pos[0] - scroll[0], enemy.pos[1] - scroll[1]),
-                        (enemy.final_pos[0] -  scroll[0], enemy.final_pos[1] - scroll[1]),
-                        1
-                    )
- 
                 enemy.render(display, offset=scroll)
             

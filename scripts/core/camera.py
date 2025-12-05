@@ -12,7 +12,7 @@ class Camera:
         else:
             self.scroll[0] += 1.5
 
-        self.scroll[1] += (self.target.rect().centery - self.display_height / 2 - self.scroll[1]) / 15
+        self.scroll[1] += (self.target.rect().centery - self.display_height / 2 - self.scroll[1]) / 35
     
     def instant_focus(self):
         self.scroll[0] = self.target.rect().centerx - self.display_width / 2

@@ -16,6 +16,7 @@ class PhysicsEntity:
 
         self.size = size
         self.angle = 180
+        self.angle_rad = math.radians(self.angle)
 
         self.speed = 0
         self.max_speed = 2
@@ -28,6 +29,8 @@ class PhysicsEntity:
         self.hitbox_offset = (-6, -6)
         self.hitbox_mult = (4, 4)
 
+        self.render_angle = 90
+
     def update_logic(self, movement=(0, 0), angle=0):
 
         self.angle += angle
@@ -35,18 +38,15 @@ class PhysicsEntity:
         self.angle_rad = math.radians(self.angle)
         
         if movement[0] > 0:
-            self.angle += random.uniform(-0.3, 0.3)
+            # self.angle += random.uniform(-0.3, 0.3)
             self.speed = min(self.speed + self.acc, self.max_speed)
         else:
             self.speed *= self.friction
         if movement[0] < 0:
             self.speed = max(self.speed - 0.02, -0.2)
 
-        dx =  math.sin(self.angle_rad) * self.speed
-        dy = -math.cos(self.angle_rad) * self.speed
-        
-        self.pos[1] += dx
-        self.pos[0] += dy
+        self.pos[1] += math.sin(self.angle_rad) * self.speed
+        self.pos[0] += -math.cos(self.angle_rad) * self.speed
 
         if self.HP <= 0:
             self.alive = False
@@ -58,7 +58,7 @@ class PhysicsEntity:
         scaled_image = pygame.transform.scale(self.game.assets[self.type], (self.size[0] * 6, self.size[1] * 6))
 
         if self.type == "enemy":
-            rotated_image= pygame.transform.rotate(scaled_image, self.angle + 90)
+            rotated_image= pygame.transform.rotate(scaled_image, 90 - self.render_angle)
         else:
             rotated_image= pygame.transform.rotate(scaled_image, self.angle - 90)
 
@@ -69,10 +69,12 @@ class PhysicsEntity:
         if settings.DEBUG_MODE:
             if self.type == "player":
                 color = (0, 255, 0)
-            elif self.type == "enemy":
+            elif self.type == "missile":
                 color = (255, 0, 0)
             elif self.type == "bullet":
                 color = (0, 0, 0)
+            else:
+                color = (152, 152, 152)
 
             pygame.draw.rect(surf, color, self.rect().move(-offset[0], -offset[1]), 1)
     

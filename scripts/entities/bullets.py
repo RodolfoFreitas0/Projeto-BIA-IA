@@ -17,9 +17,9 @@ class Bullet(PhysicsEntity):
         super().update_logic(movement=(1, 0))
 
 class BulletManager:
-        def __init__(self, enemies):
+        def __init__(self, targets):
             self.bullets = []
-            self.enemies = enemies
+            self.targets = targets
             
         def add(self, bullet):
             self.bullets.append(bullet)
@@ -36,13 +36,13 @@ class BulletManager:
                     self.bullets.remove(bullet)
                     continue
 
-                for enemy in self.enemies:
-                    if enemy.alive and bullet.rect().colliderect(enemy.rect()):
-                        print("Bala colidiu com inimigo!")
-                        enemy.alive = False
-                        bullet.alive = False
-                        self.bullets.remove(bullet)
-                        break
+                for target_list in self.targets:
+                    for target in target_list:
+                        if target.alive and bullet.rect().colliderect(target.rect()):
+                            print("Bala colidiu com inimigo!")
+                            target.alive = False
+                            bullet.alive = False
+                            break
                                 
         
         def render(self, display, scroll):

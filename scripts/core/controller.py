@@ -11,3 +11,6 @@ class InputController:
     
     def rotation_value(self):
         return self.rotation[0] - self.rotation[1]
+    
+    def debugging(self):
+        pass
