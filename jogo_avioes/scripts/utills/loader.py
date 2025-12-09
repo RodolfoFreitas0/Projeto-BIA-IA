@@ -1,7 +1,7 @@
 import pygame
 import os
 
-BASE_IMG_PATH =  "00_resources/data/images/"
+BASE_IMG_PATH =  "jogo_avioes/00_resources/data/images/"
 
 def load_img(path):
     img = pygame.image.load(BASE_IMG_PATH + path).convert()
