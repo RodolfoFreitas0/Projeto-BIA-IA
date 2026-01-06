@@ -5,7 +5,6 @@ import scripts.core.settings as settings
 
 def handle_events(game, controller):
     for event in pygame.event.get():
-
             # Fechar o jogo
             if event.type == pygame.QUIT:
                 game.running = False

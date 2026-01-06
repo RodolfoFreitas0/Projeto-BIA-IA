@@ -19,21 +19,16 @@ class Enemy(PhysicsEntity):
         
         self.HP = 1
         self.max_speed = 3
-        self.pos[0] = scroll[0] + settings.DISPLAY_SIZE[0] - 20
-        self.timer = 0
-
-        self.world_y = pos[1]
-        self.fixed_x_offset = settings.DISPLAY_SIZE[0] - 20
 
     def spawn(self, scroll, screen_width, screen_height):
-        side = random.randint(0, 2)
+        side = random.randint(0, 1)
         margem = 20
 
         if side == 0: #Topo
             return [scroll[0] + screen_width - margem, margem + scroll[1]], side
         
         else: #Baixo 
-            return [scroll[0] + screen_width - margem, scroll[1] + screen_width - margem], side
+            return [scroll[0] + screen_width - margem, scroll[1] + screen_height - margem], side
         
     def dif_angle(self, side):
         if side == 0: # Topo
@@ -43,24 +38,25 @@ class Enemy(PhysicsEntity):
 
     def update_logic(self, scroll, player):
 
-        if self.angle == 90: 
-            self.world_y += self.speed
-        else:
-            self.world_y -= self.speed
+        # if self.angle == 90: 
+        #     self.pos[1] += math.sin(player.angle_rad) * 3
+        # else:
+        #     self.pos[1] += -math.sin(player.angle_rad) * 3
 
         top = scroll[1] + 20
         bottom = scroll[1] + settings.DISPLAY_SIZE[1] - 20
 
-        if self.world_y < top:
-            self.world_y = top
+        if self.pos[1] < top:
+            self.pos[1] = top
             self.angle = 90
 
-        elif self.world_y > bottom:
-            self.world_y = bottom
+        elif self.pos[1] > bottom:
+            self.pos[1] = bottom
             self.angle = 270
 
-        self.pos[0] = scroll[0] + self.fixed_x_offset
-        self.pos[1] = self.world_y
+        self.pos[0] = scroll[0] + settings.DISPLAY_SIZE[0] - 20
+        self.pos[1] += math.sin(player.angle_rad) * 3
+        
 
         # self.pos[0] = scroll[0] + settings.DISPLAY_SIZE[0] - 20
 
@@ -107,7 +103,7 @@ class Enemy(PhysicsEntity):
         dx = player.pos[0] - self.pos[0]
         dy = player.pos[1] - self.pos[1]
         
-        self.render_angle = math.degrees(math.atan2(dy, dx))
+        # self.render_angle = math.degrees(math.atan2(dy, dx))
               
 class EnemyManager:
         def __init__(self):
