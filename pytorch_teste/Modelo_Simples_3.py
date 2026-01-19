@@ -62,4 +62,4 @@ for epoch in range(epochs):
             f"{acertou}"
         )
     
-    input(f"Pressione ENTER para continuar para o proximo epoch")
+    # input(f"Pressione ENTER para continuar para o proximo epoch")
