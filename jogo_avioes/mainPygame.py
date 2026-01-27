@@ -78,10 +78,46 @@ class PygameGame:
         if settings.PYGAME_MODE:
             pygame.time.set_timer(settings.SPAWN_EVENT, settings.SPAWN_TIME)
             pygame.time.set_timer(settings.SCORE_EVENT, settings.SCORE_TIME)
-            # pygame.time.
     
-    def menu_menu(self):
-        pass
+    def GameMenu(self):
+        font_title = pygame.font.SysFont("arial", 40)
+        font_button = pygame.font.SysFont("arial", 20)
+
+        play_rect = pygame.Rect(self.display_width//2, 60, 100, 50)
+        quit_rect = pygame.Rect(self.display_width//2, 120, 100, 50)
+
+        while self.menu:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    self.menu = False
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if play_rect.collidepoint(event.pos):
+                        self.menu = False
+                        self.reset()
+                    
+                    if quit_rect.collidepoint(event.pos):
+                        self.running = False
+                        self.menu = False
+            
+            self.display.fill((0, 0, 0))
+
+            title = font_title.render(settings.CAPTION, True, "white")
+            self.display.blit(title, title.get_rect(center=(self.display_width//2, 50)))
+
+            pygame.draw.rect(self.display, "white", play_rect, 3)
+            pygame.draw.rect(self.display, "white", quit_rect, 3)
+
+            play_text = font_button.render("PLAY", True, "white")
+            quit_text = font_button.render("QUIT", True, "white")
+
+            self.display.blit(play_text, play_text.get_rect(center=play_rect.center))
+            self.display.blit(quit_text, quit_text.get_rect(center=quit_rect.center))
+
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
+            pygame.display.update()
+            self.clock.tick(60)
 
     def highscore_menu(self):
         pass
@@ -103,8 +139,8 @@ class PygameGame:
 
     def run(self):
 
-        while self.menu:
-            break
+        if self.menu:
+            self.GameMenu()
 
         while self.running: 
             handle_events(self, self.inputCTRL)        
@@ -167,6 +203,12 @@ class PygameGame:
             else:
 
                 self.scroll[0] += (self.player.rect().centerx - self.display_width / 2 - self.scroll[0])
+
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_r]:
+                    self.menu = True
+                    self.game_active = True
+                    self.GameMenu()
                 
                 if settings.PYGAME_MODE: 
                     self.display.blit(self.assets["background"], (0, 0))

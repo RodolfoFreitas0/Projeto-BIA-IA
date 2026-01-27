@@ -4,10 +4,12 @@ import sys
 
 pygame.init()
 
-from setttings import *
+from settings import *
+from start_screen import StartScreen
 
 pygame.display.set_caption(TITLE)
 
+# Classe usada para fazer os players
 class Platform:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, 10, 100)
@@ -22,7 +24,8 @@ class Platform:
     def render(self):
         pygame.draw.rect(SCREEN, "white", self.rect)
 
-class Ball:
+# Classe usada para fazer a bola
+class Ball: 
     def __init__(self):
         self.rect = pygame.Rect(
             WINDOW_WIDTH/2 - 10,
@@ -61,19 +64,21 @@ class Ball:
     def render(self):
         pygame.draw.circle(SCREEN, "white", self.rect.center, 10)
 
+# Classe usada para desenhar o HUD na tela
 class HUD:
     def __init__(self):
-        self.font_small = pygame.font.SysFont("Monocraft", 30) 
-        self.font_big = pygame.font.SysFont("Monocraft", 45)
+        self.font_small = pygame.font.SysFont("Monocraft", 40) 
+        self.font_big = pygame.font.SysFont("Monocraft", 50)
 
     def draw_player_score(self, surf, score):
 
-        score_text = self.font_small.render(f"{score}", False, "White")
+        score_text = self.font_small.render(f"{score}", False, "white")
         text_rect = score_text.get_rect()
 
-        background_rect = pygame.Rect(WINDOW_WIDTH // 2 + 60, 15, 40, 40)
+        background_rect = text_rect.inflate(20, 20)
+        background_rect.topleft = (WINDOW_WIDTH // 2 + 60, 15)
+
         text_rect.center = background_rect.center
-        text_rect.centerx += 2
 
         pygame.draw.rect(surf, (0, 0, 0), background_rect)
         pygame.draw.rect(surf, (255, 255, 255), background_rect, 3)
@@ -81,17 +86,30 @@ class HUD:
     
     def draw_enemy_score(self, surf, score):
 
-        score_text = self.font_small.render(f"{score}", False, "White")
+        score_text = self.font_small.render(f"{score}", False, "white")
         text_rect = score_text.get_rect()
 
-        background_rect = pygame.Rect(WINDOW_WIDTH // 2 - 100, 15, 40, 40)
+        background_rect = text_rect.inflate(20, 20)
+        background_rect.topleft = (WINDOW_WIDTH // 2 - 100, 15)
+
         text_rect.center = background_rect.center
-        text_rect.centerx += 2
 
         pygame.draw.rect(surf, (0, 0, 0), background_rect)
         pygame.draw.rect(surf, (255, 255, 255), background_rect, 3)
         surf.blit(score_text, text_rect)
+    
+    def draw_winner_screen(self, winner):
+        font = pygame.font.SysFont("Monocraft", 70)
+        
+        SCREEN.fill((0, 0, 0))
 
+        text = font.render(f"{winner} GANHOU!", True, "white")
+        SCREEN.blit(text, text.get_rect(center=(WINDOW_WIDTH//2, WINDOW_HEIGHT//2 - 50)))
+
+        info = self.font_small.render(f"Aperte qualquer tecla para voltar ao menu", True, "white")
+        SCREEN.blit(info, info.get_rect(center=(WINDOW_WIDTH//2, WINDOW_HEIGHT//2 + 50)))
+        
+# Classe  principal do jogo
 class Game:
     def __init__(self):
         self.player = Platform(WINDOW_WIDTH - 110, WINDOW_HEIGHT/2 - 50)
@@ -102,17 +120,20 @@ class Game:
         self.player_score = 0
         self.enemy_score = 0
 
+        self.winner = None
+        self.game_over = False
+
     def handle_input(self):
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_w]:
+        if keys[pygame.K_UP]:
             self.player.update_logic(key="W")
-        if keys[pygame.K_s]:
+        if keys[pygame.K_DOWN]:
             self.player.update_logic(key="S")
         
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_w]:
             self.enemy.update_logic(key="UP")
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_s]:
             self.enemy.update_logic(key="DOWN")
     
     def check_score(self):
@@ -123,6 +144,14 @@ class Game:
         elif self.ball.rect.x > WINDOW_WIDTH + 10:
             self.enemy_score += 1
             self.ball.reset(direction=1)
+        
+        if self.player_score == 10:
+            self.winner = "PLAYER"
+            self.game_over = True
+        
+        elif self.enemy_score == 10:
+            self.winner = "ENEMY"
+            self.game_over = True
         
     def update(self):
         self.ball.update_logic()
@@ -153,14 +182,33 @@ class Game:
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    return
 
-            self.handle_input()
-            self.update()
-            self.render()
+                if self.game_over == True and event.type == pygame.KEYDOWN:
+                    self.game_over == False
+                    return
+                
+            if self.game_over == False:
+                self.handle_input()
+                self.update()
+                self.render()
+            else:
+                self.HUD.draw_winner_screen(winner=self.winner)
+                pygame.display.update()
+            
             CLOCK.tick(300)
 
 if __name__ == "__main__":
-    game = Game()
-    game.run()
+
+    while True:
+        start = StartScreen(SCREEN, CLOCK, TITLE)
+        result = start.run()
+
+        if result == "PLAY":
+            game = Game()
+            game.run()
+        else:
+            break
+        
+    pygame.quit()
+    sys.exit()

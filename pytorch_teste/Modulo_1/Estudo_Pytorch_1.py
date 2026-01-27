@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+import numpy as np
+from pathlib import Path
 
 weight = 0.7
 bias = 0.3
@@ -150,7 +152,12 @@ optmizer = torch.optim.SGD( # <- (stochastic gradient descent)
 torch.manual_seed(42)
 
 # Quantidade de loops
-epochs = 100
+epochs = 10
+
+# Monitorar valores:
+epoch_count = []
+loss_values = []
+test_loss_values = []
 
 # Passo 1. Rodar loop na DATA
 for epoch in range(epochs):
@@ -185,14 +192,86 @@ for epoch in range(epochs):
     
     # Prints
     if epoch % 10 == 0:
+        epoch_count.append(epoch)
+        loss_values.append(loss)
+        test_loss_values.append(test_loss)
         print(f"Epoch: {epoch} | Loss: {loss} | Test Loss: {test_loss} ")
         print(model_0.state_dict())
         print()
 
-# plot_predictions(
-#     train_data=X_train,
-#     train_labels=y_train,
-#     test_data=X_test,
-#     test_labels=y_test,
-#     predictions=y_preds
-# )
+print()
+
+# Plot the loss
+
+plt.plot(epoch_count, np.array(torch.tensor(loss_values).numpy()), label="Train Loss")
+plt.plot(epoch_count, test_loss_values, label="Test Loss")
+plt.title("Training and test loss curves")
+plt.ylabel("Loss")
+plt.xlabel("Epochs")
+plt.legend()
+# plt.show()
+
+# --------------------------------------------------------------------------
+
+## Salvando informações de um modelo
+
+# Existem 3 metodos principais para salvar e carregar modelos no PyTorch
+
+# 1. "torch.save()" - Serve para salvar um objeto PyTorch no formato Pickle (Biblioteca de salvamento)
+# 2. "torch.load()" - Serve pra carregar um objeto PyTorch Salvo
+# 3. "torch.nn.Module.load_state_dict()" - Serve pra carregar um "state dictionary" de um modelo
+# ^ Salva o model_0.state_dict()
+
+# Salvando:
+# torch.save(model.state_dict(), PATH)
+
+# Carregando:
+# model = TheModelClass(*args, **kwargs)
+# model.load_state_dict(torch.load(PATH))
+# model.eval()
+
+## Outra forma de salvar/carregar é fazer isso com o modelo inteiro
+
+# Salvando:
+# torch.save(model, PATH)
+
+# Carregando:
+# model = torch.load(PATH)
+# model.eval()
+
+## Salvando na pratica:
+
+# 1. Criando o diretorio
+MODEL_PATH = Path("models")
+MODEL_PATH.mkdir(parents=True, exist_ok=True)
+
+# 2. Criando o "Save Path"
+MODEL_NAME = "01_Pytorch_Model_0.pth"
+MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
+
+# 3. Salvar o state_dict() do modelo
+torch.save(
+    obj=model_0.state_dict(),
+    f=MODEL_SAVE_PATH
+   )
+
+## Carregando na pratica:
+
+# Salvamos o "state_dict" do modelo, então para carregar nós criamos uma nova instancia do modelo e carregamos o "state_dict" nele.
+loaded_model_0 = LinearRegressionModel()
+
+# Carregar o "state_dict" salvo do model_0 (Isso vai atualizar a nova instancia com os parametros do "state_dict" salvo)
+loaded_model_0.load_state_dict(torch.load(f=MODEL_SAVE_PATH))
+
+## Vamos testar o modelo carregado
+
+loaded_model_0.eval()
+with torch.inference_mode():
+    loaded_model_preds = loaded_model_0(X_test)
+
+model_0.eval()
+with torch.inference_mode():
+    y_preds = model_0(X_test)
+
+print()
+print(y_preds == loaded_model_preds)
