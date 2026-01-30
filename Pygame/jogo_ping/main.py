@@ -72,7 +72,7 @@ class HUD:
 
     def draw_player_score(self, surf, score):
 
-        score_text = self.font_small.render(f"{score}", False, "white")
+        score_text = self.font_small.render(f"{score:02}", False, "white")
         text_rect = score_text.get_rect()
 
         background_rect = text_rect.inflate(20, 20)
@@ -86,7 +86,7 @@ class HUD:
     
     def draw_enemy_score(self, surf, score):
 
-        score_text = self.font_small.render(f"{score}", False, "white")
+        score_text = self.font_small.render(f"{score:02}", False, "white")
         text_rect = score_text.get_rect()
 
         background_rect = text_rect.inflate(20, 20)
@@ -161,6 +161,9 @@ class Game:
 
     def render(self):
         SCREEN.fill((0, 0, 0))
+    
+        screen_rect = pygame.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+        pygame.draw.rect(SCREEN, (255, 255, 255), screen_rect, 4)
 
         pygame.draw.line(
             SCREEN, "white",
@@ -194,8 +197,8 @@ class Game:
                 self.render()
             else:
                 self.HUD.draw_winner_screen(winner=self.winner)
-                pygame.display.update()
-            
+                
+            pygame.display.update()
             CLOCK.tick(300)
 
 if __name__ == "__main__":

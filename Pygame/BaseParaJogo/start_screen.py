@@ -1,6 +1,4 @@
 import pygame
-import sys
-
 class StartScreen:
     def __init__(self, screen, clock, title):
         self.screen = screen
@@ -17,6 +15,9 @@ class StartScreen:
 
     def draw(self):
         self.screen.fill((0, 0, 0))
+
+        screen_rect = pygame.Rect(0, 0, self.width, self.height)
+        pygame.draw.rect(self.screen, (255, 255, 255), screen_rect, 4)
 
         title_surf = self.font_title.render(self.title, True, "white")
         self.screen.blit(
@@ -41,6 +42,7 @@ class StartScreen:
 
             for event in pygame.event.get():
                 if event.type == pygame.quit:
+                    pygame.exit()
                     return "QUIT"
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:

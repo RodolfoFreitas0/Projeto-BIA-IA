@@ -6,7 +6,7 @@ pygame.init()
 
 from settings import *
 from start_screen import StartScreen
-from jogo_ping.game_over import GameOver
+from game_over import GameOver
 
 pygame.display.set_caption(TITLE)
 
@@ -17,8 +17,9 @@ class Game():
         self.tmanager = TargetManager()
         self.hud = HUD()
         self.score = 0
-        self.timer = 60 * 2
+        self.timer = 60 * 61
         self.game_over = False
+        pygame.mouse.set_visible(False)
 
     def handle_events(self, events):
         for event in events:
@@ -28,8 +29,13 @@ class Game():
                 return False
             
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.tmanager.check_click(event.pos):
-                    self.score += 1
+                target = self.tmanager.check_click(event.pos)
+
+                if target:
+                    if target.lifetime > 120:
+                        self.score += 1
+                    else:
+                        self.score += 2
         
         return True
 
@@ -48,11 +54,19 @@ class Game():
 
     def render(self):
         SCREEN.fill((0, 0, 0))
+
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        cursor_rect = pygame.Rect(0, 0, 10, 10)
+        cursor_rect.center = (mouse_x, mouse_y)
+
+        screen_rect = pygame.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+        pygame.draw.rect(SCREEN, (255, 255, 255), screen_rect, 4)
+    
         self.tmanager.render(SCREEN, FONT)
         self.hud.timeHUD(SCREEN, self.timer // 60)
         self.hud.scoreHUD(SCREEN, WINDOW_WIDTH, self.score)
 
-        pygame.display.update()
+        pygame.draw.rect(SCREEN, (0, 215, 255), cursor_rect)
 
     def run(self):
         running = True
@@ -66,7 +80,7 @@ class Game():
 
             if self.game_over:
                 return "GAME_OVER", self.score
-
+            pygame.display.update()
             CLOCK.tick(60)
 
 # --------------------------------------------------------------------------- #
@@ -77,12 +91,18 @@ class Target():
         self.speed_x = speedx
         self.speed_y = speedy
         self.lifetime = 60 * 4
+        self.color = (255, 255, 255)
     
     def update(self, window_width, window_height):
         self.rect.x += self.speed_x
         self.rect.y += self.speed_y
 
         self.lifetime -= 1
+
+        if self.lifetime < 120:
+            self.color = (255, 215, 0)
+        else:
+            self.color = (255, 255, 255) 
 
         if self.rect.left <= 0 or self.rect.right >= window_width:
             self.speed_x *= -1
@@ -94,7 +114,7 @@ class Target():
         return self.lifetime <= 61
 
     def render(self, surf, font):
-        pygame.draw.rect(SCREEN, (255, 255, 255), self.rect, 0)
+        pygame.draw.rect(surf, self.color, self.rect, 0)
 
         seconds = int(self.lifetime / 60)
         text = font.render(f"{seconds}", False, "black")
@@ -134,7 +154,7 @@ class TargetManager():
         for target in self.targets[:]:
             if target.rect.collidepoint(mouse_pos):
                 self.targets.remove(target)
-                return True
+                return target
         return False
 
     def render(self, surf, font):

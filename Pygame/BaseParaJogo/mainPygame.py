@@ -15,12 +15,18 @@ class Game():
     def update(self):
         pass
 
-    def render(self):
-        SCREEN.fill(0, 0, 0)
+    def render(self, surf):
+        SCREEN.fill((0, 0, 0))
+        screen_rect = pygame.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+        pygame.draw.rect(surf, (255, 255, 255), screen_rect, 4)
 
     def run(self):
-        pass
         
+        while True:
+            self.render(SCREEN)
+
+            pygame.display.update()
+            CLOCK.tick(60)
 
 if __name__ == "__main__":
 
