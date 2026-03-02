@@ -6,7 +6,6 @@ pygame.init()
 
 from settings import *
 from start_screen import StartScreen
-from game_over import GameOver
 
 pygame.display.set_caption(TITLE)
 
@@ -185,6 +184,20 @@ class HUD():
 
     def timeHUD(self, surf, time):
 
+        time_text = self.font_small.render(f"{time:02}", False, "white")
+        text_rect = time_text.get_rect()
+
+        background_rect = text_rect.inflate(20, 20)
+        background_rect.topleft = (50, 15)
+
+        text_rect.centerx = background_rect.centerx + 3
+        text_rect.centery = background_rect.centery
+
+        pygame.draw.rect(surf, (0, 0, 0), background_rect)
+        pygame.draw.rect(surf, (255, 255, 255), background_rect, 3)
+        surf.blit(time_text, text_rect)
+
+    def GameOverHUD(self, surf):
         time_text = self.font_small.render(f"{time:02}", False, "white")
         text_rect = time_text.get_rect()
 

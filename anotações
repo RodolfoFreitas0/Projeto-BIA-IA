@@ -1,0 +1,72 @@
+I found a couple of pertinent links.
+
+https://gamedevacademy.org/pygame-animation-tutorial-complete-guide/
+
+https://www.codewithc.com/advanced-procedural-animation-in-pygame-2/
+
+Interesting topic.
+
+Coding Challenge #64.2: Inverse Kinematics:
+
+https://www.youtube.com/watch?v=hbgDqyy8bIw
+
+A simple procedural animation technique:
+
+https://www.youtube.com/watch?v=qlfh_rv6khY
+
+Procedural Animation in 5 Minutes | devlog 1:
+
+https://www.youtube.com/watch?v=PcpkBzcRdSU
+
+The Procedural Animation of Gibbon: Beyond the Trees - Wolfire Games:
+
+https://www.youtube.com/watch?v=KCKdGlpsdlo
+
+I made a procedural animation based demo a while ago, here is the GitHub if you are interested. The code was very rushed though and may be not the best for learning.
+
+https://github.getafreenode.com/henry-paschke/Caution
+
+Coding challenge
+
+https://www.youtube.com/watch?v=17WoOqgXsRM&list=PLRqwX-V7Uu6ZiZxtDDRCi6uhfTH4FilpH&index=2
+
+https://www.youtube.com/watch?v=0xmpEdbEPpc
+
+Video IA treinamento de reforço
+
+https://www.youtube.com/watch?v=gMgj4pSHLww&list=PL58zEckBH8fCt_lYkmayZoR9XfDCW9hte
+
+https://www.youtube.com/watch?v=Ab8TOSFfNp4
+
+Needed Things for an Engine Only 2Dgame (reusable/no game dependency):
+Buffer System (focus on window/full screen, universal size, ecc..)
+Rendering System (focus on rendering game graphic)
+Asset Management System
+Input Routing System
+Event Messaging System
+Time/DeltaTime System
+Scene/Level Management System
+Game Mode System
+Entity Management System
+Component System (hybrid ECS)
+Animation System
+Collision System
+Camera System
+UI System (Large system that includes many classes I'm afraid... luckily I already have some things.)
+TextInput System (there isn't in Monogame, but I already have it)
+Dialogue System
+Cinematic/CutScene System
+Tilemap  System
+Pathfinding System
+AI System
+Save/Load System
+
+Other things to add in the future(I will add them when I need them):
+Audio System
+Scriptable Actions System (reusable actions)
+Localization System (choice and load correct language file)
+Debugging System Tools (for developing)
+
+https://youtu.be/ih20l3pJoeU?si=poNymZPz5uXz-QjO
+
+https://www.youtube.com/watch?v=sjflNG4gS_8

@@ -35,7 +35,7 @@ class PygameGame:
             self.clock = SimpleClock()
 
         self.game_active = True
-        self.menu = True
+        self.menu = False
         self.running = True
 
         self.display_width = settings.DISPLAY_SIZE[0]
@@ -139,8 +139,8 @@ class PygameGame:
 
     def run(self):
 
-        if self.menu:
-            self.GameMenu()
+        # if self.menu:
+        #     self.GameMenu()
 
         while self.running: 
             handle_events(self, self.inputCTRL)        

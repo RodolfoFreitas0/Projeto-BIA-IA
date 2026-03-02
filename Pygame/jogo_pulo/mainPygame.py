@@ -13,6 +13,7 @@ class Game():
     def __init__(self):
         self.player = Player(50, WINDOW_HEIGHT // 2, 20, 20)
         self.obsmanager = Obstacle_Manager()
+        self.gameover = False
     
     def handle_events(self, events):
         for event in events:
@@ -25,7 +26,7 @@ class Game():
 
     def update(self, events):
         self.player.update(events)
-        self.obsmanager.update()
+        self.obsmanager.update(self.player)
 
     def render(self, surf):
         SCREEN.fill((0, 0, 0))
@@ -42,12 +43,17 @@ class Game():
         running = True
         
         while running:
+            print(self.player.IsAlive)
+
             events = pygame.event.get()
 
             running = self.handle_events(events)
 
-            self.update(events)
-            self.render(SCREEN)
+            if self.gameover = False
+                self.update(events)
+                self.render(SCREEN)
+            else:
+
 
             pygame.display.update()
             CLOCK.tick(60)
@@ -55,8 +61,6 @@ class Game():
 class Player():
     def __init__(self, posX, posY, width, height):
         self.rect = pygame.Rect(posX, posY, width, height)
-        
-        self.HP = 3
 
         self.speed_y = 0
         self.gravity = 0.65
@@ -109,7 +113,7 @@ class Obstacle_Manager():
     def spawn(self):
         self.obstacles.append(Obstacle())
 
-    def update(self):
+    def update(self, player):
         self.timer -= 10
 
         if self.timer == 0:
@@ -117,6 +121,9 @@ class Obstacle_Manager():
             self.timer = 400
     
         for obstacle in self.obstacles[:]:
+            if obstacle.rect.colliderect(player.rect):
+                game.gameover = True
+
             obstacle.update()
         
         self.obstacles = [obs for obs in self.obstacles if not obs.is_out()]
@@ -127,9 +134,14 @@ class Obstacle_Manager():
 
 class HUD():
     def __init__(self):
+        self.font_big = pygame.font.SysFont("Monocraft", 40) 
+        self.font_small = pygame.font.SysFont("Monocraft", 20)
+
+    def score_hud(self, score):
         pass
-
-
+    
+    def gameover_hud(self, score):
+        pass
 
 if __name__ == "__main__":
 
