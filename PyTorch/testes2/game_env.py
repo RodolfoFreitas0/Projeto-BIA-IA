@@ -29,7 +29,7 @@ class DodgeEnv:
         self.enemies.append(pygame.Rect(x, -40, 40, 40))
 
     def step(self, action):
-        # ações
+
         if action == 1: self.player.x -= 7
         if action == 2: self.player.x += 7
         if action == 3: self.player.y -= 7
@@ -37,19 +37,17 @@ class DodgeEnv:
 
         self.player.clamp_ip(pygame.Rect(0,0,WIDTH,HEIGHT))
 
-        # spawn
         self.spawn_timer += 1
         if self.spawn_timer > 25:
             self.spawn_timer = 0
             self.spawn_enemy()
 
-        reward = -0.01  # punição por ficar parado
+        reward = -0.01
         player_y = self.player.y
 
         for enemy in self.enemies[:]:
             enemy.y += self.enemy_speed
 
-            # DESVIOU do inimigo (passou perto e não colidiu)
             if enemy.y > player_y and abs(enemy.x - self.player.x) < 50:
                 reward += 5
 
@@ -67,9 +65,6 @@ class DodgeEnv:
 
         return self.get_state(), reward, self.done
 
-    # --------------------------------------------------
-    # NOVO STATE (muito melhor)
-    # --------------------------------------------------
     def get_state(self):
         nearest = min(self.enemies, key=lambda e: e.y, default=None)
 

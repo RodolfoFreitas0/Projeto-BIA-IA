@@ -41,11 +41,11 @@ def train_batch():
 
     batch = random.sample(memory, BATCH_SIZE)
 
-    states      = torch.tensor([b[0] for b in batch], dtype=torch.float32, device=device)
-    actions     = torch.tensor([b[1] for b in batch], dtype=torch.long, device=device)
-    rewards     = torch.tensor([b[2] for b in batch], dtype=torch.float32, device=device)
+    states = torch.tensor([b[0] for b in batch], dtype=torch.float32, device=device)
+    actions = torch.tensor([b[1] for b in batch], dtype=torch.long, device=device)
+    rewards = torch.tensor([b[2] for b in batch], dtype=torch.float32, device=device)
     next_states = torch.tensor([b[3] for b in batch], dtype=torch.float32, device=device)
-    dones       = torch.tensor([b[4] for b in batch], dtype=torch.float32, device=device)
+    dones = torch.tensor([b[4] for b in batch], dtype=torch.float32, device=device)
 
     q_values = model(states).gather(1, actions.unsqueeze(1)).squeeze(1)
 
