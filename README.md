@@ -123,7 +123,7 @@ Para executar qualquer script de um jogo, use o formato geral:
 python Jogos_Algoritmos/<jogo>/<versao>/<script>.py
 ```
 
-Exemplo completo com o jogo do Sapo:
+Exemplo com o jogo do Sapo:
 
 ```bash
 python Jogos_Algoritmos/jogo_sapo/sapo_pygame/mainPygame.py
