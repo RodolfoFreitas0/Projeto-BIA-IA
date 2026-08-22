@@ -15,7 +15,9 @@ GAMES_CONFIG = {
     "4": {"name": "Cobrinha (Snake)", "folder": "jogo_cobrinha", "csv_h": "dados_humano_cobrinha.csv", "csv_dqn": "dados_ia_cobrinha.csv", "csv_a2c": "dados_ia_cobrinha_a2c.csv"},
     "5": {"name": "Pulo (Jump)", "folder": "jogo_pulo", "csv_h": "dados_humano_pulo.csv", "csv_dqn": "dados_ia_pulo.csv", "csv_a2c": "dados_ia_pulo_a2c.csv"},
     "6": {"name": "Mira (Aim)", "folder": "jogo_mira", "csv_h": "dados_humano_mira.csv", "csv_dqn": "dados_ia_mira.csv", "csv_a2c": "dados_ia_mira_a2c.csv"},
-    "7": {"name": "Pong", "folder": "jogo_pong", "csv_h": "dados_humano_pong.csv", "csv_dqn": "dados_ia_pong_dqn.csv", "csv_a2c": "dados_ia_pong.csv"}
+    "7": {"name": "Ping (Pong)", "folder": "jogo_pong", "csv_h": "dados_humano_pong.csv", "csv_dqn": "dados_ia_pong_dqn.csv", "csv_a2c": "dados_ia_pong.csv"},
+    "8": {"name": "Arkanoid", "folder": "jogo_arkanoid", "csv_h": "dados_humano_arkanoid.csv", "csv_dqn": "dados_ia_arkanoid_dqn.csv", "csv_a2c": "dados_ia_arkanoid_a2c.csv"},
+    "9": {"name": "Pousar (Lunar Lander)", "folder": "jogo_pousar", "csv_h": "dados_humano_pousar.csv", "csv_dqn": "dados_ia_pousar_dqn.csv", "csv_a2c": "dados_ia_pousar_a2c.csv"}
 }
 
 def load_data(file_path):
@@ -75,6 +77,9 @@ def generate_chart(config):
         plt.plot(ep_a2c, score_a2c, color='lightgreen', alpha=0.2, label='A2C (Raw)')
         score_a2c_smooth = get_moving_average(score_a2c, window=100)
         plt.plot(ep_a2c, score_a2c_smooth, color='green', linewidth=2, label='A2C (Media Movel)')
+
+    if not os.path.exists(path_h):
+        print(f"Baseline humano ausente: {path_h}")
 
     if ep_h:
         human_mean = sum(score_h) / len(score_h)
