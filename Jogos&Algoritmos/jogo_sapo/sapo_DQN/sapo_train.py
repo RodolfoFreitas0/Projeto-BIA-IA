@@ -24,7 +24,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 if not os.path.isfile(DATA_ARCHIVE):
     with open(DATA_ARCHIVE, mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["Episodio", "Score", "Passos"])
+        writer.writerow(["Episodio", "Reward", "Passos"])
 
 INPUT_SIZE = 17
 OUTPUT_SIZE = 5
@@ -76,10 +76,10 @@ def train_step():
     loss.backward()
     optimizer.step()
 
-def save_data(episode, score, steps):
+def save_data(episode, reward, steps):
     with open(DATA_ARCHIVE, mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([episode, score, steps])
+        writer.writerow([episode, reward, steps])
 
 global_step = 0
 
@@ -110,14 +110,14 @@ for episode in range(MAX_EPISODES):
         if global_step % 4 == 0:
             train_step()
 
-    save_data(episode, env.score, steps)
+    save_data(episode, total_reward, steps)
 
     if epsilon > epsilon_min:
         epsilon *= epsilon_decay
         
     if episode % 10 == 0:
         target_net.load_state_dict(policy_net.state_dict())
-        print(f"Ep {episode} | Score {env.score} | Reward {total_reward:.1f} | Epsilon {epsilon:.3f}")
+        print(f"Ep {episode} | Reward {total_reward:.1f} | Epsilon {epsilon:.3f}")
         
     if episode % 100 == 0:
         torch.save(policy_net.state_dict(), SAVE_PATH)

@@ -13,7 +13,7 @@ GAMES_CONFIG = {
     "2": {"name": "Passaro (Flappy)", "folder": "jogo_passaro", "csv_h": "dados_humano_passaro.csv", "csv_dqn": "dados_ia_passaro.csv", "csv_a2c": "dados_ia_passaro_a2c.csv"},
     "3": {"name": "Desviar (Dodger)", "folder": "jogo_desviar", "csv_h": "dados_humano_desviar.csv", "csv_dqn": "dados_ia_desviar.csv", "csv_a2c": "dados_ia_desviar_a2c.csv"},
     "4": {"name": "Cobrinha (Snake)", "folder": "jogo_cobrinha", "csv_h": "dados_humano_cobrinha.csv", "csv_dqn": "dados_ia_cobrinha.csv", "csv_a2c": "dados_ia_cobrinha_a2c.csv"},
-    "5": {"name": "Pulo (Jump)", "folder": "jogo_pulo", "csv_h": "dados_humano_pulo.csv", "csv_dqn": "dados_ia_pulo_dqn.csv", "csv_a2c": "dados_ia_pulo_a2c.csv"},
+    "5": {"name": "Pulo (Jump)", "folder": "jogo_pulo", "csv_h": "dados_humano_pulo.csv", "csv_dqn": "dados_ia_pulo.csv", "csv_a2c": "dados_ia_pulo_a2c.csv"},
     "6": {"name": "Mira (Aim)", "folder": "jogo_mira", "csv_h": "dados_humano_mira.csv", "csv_dqn": "dados_ia_mira.csv", "csv_a2c": "dados_ia_mira_a2c.csv"},
     "7": {"name": "Ping (Pong)", "folder": "jogo_pong", "csv_h": "dados_humano_pong.csv", "csv_dqn": "dados_ia_pong_dqn.csv", "csv_a2c": "dados_ia_pong_a2c.csv"},
     "8": {"name": "Arkanoid", "folder": "jogo_arkanoid", "csv_h": "dados_humano_arkanoid.csv", "csv_dqn": "dados_ia_arkanoid_dqn.csv", "csv_a2c": "dados_ia_arkanoid_a2c.csv"},
@@ -29,12 +29,26 @@ def load_data(file_path):
         
     with open(file_path, mode='r', encoding='utf-8') as file:
         reader = csv.reader(file)
-        next(reader, None)
+        header = next(reader, None)
+        if not header:
+            return episodes, scores
+
+        # Prefere a coluna "Reward" quando ela existir no CSV (ex: sapo DQN,
+        # que agora salva o reward do episódio além do score 0/1). Se não
+        # existir, cai de volta pra "Score", que é o que os outros jogos têm.
+        header_lower = [h.strip().lower() for h in header]
+        if "reward" in header_lower:
+            value_idx = header_lower.index("reward")
+        elif "score" in header_lower:
+            value_idx = header_lower.index("score")
+        else:
+            value_idx = 1  # fallback pro formato antigo (Episodio, <valor>, ...)
+
         for row in reader:
-            if row and len(row) >= 2:
+            if row and len(row) > value_idx:
                 try:
                     episodes.append(float(row[0]))
-                    scores.append(float(row[1]))
+                    scores.append(float(row[value_idx]))
                 except ValueError:
                     continue
                     
@@ -68,13 +82,12 @@ def generate_chart(config):
 
     plt.figure(figsize=(12, 6))
 
+    # Apenas as medias moveis sao plotadas (curvas "Raw" removidas)
     if ep_dqn:
-        plt.plot(ep_dqn, score_dqn, color='lightblue', alpha=0.2, label='DQN (Raw)')
         score_dqn_smooth = get_moving_average(score_dqn, window=100)
         plt.plot(ep_dqn, score_dqn_smooth, color='blue', linewidth=2, label='DQN (Media Movel)')
 
     if ep_a2c:
-        plt.plot(ep_a2c, score_a2c, color='lightgreen', alpha=0.2, label='A2C (Raw)')
         score_a2c_smooth = get_moving_average(score_a2c, window=100)
         plt.plot(ep_a2c, score_a2c_smooth, color='green', linewidth=2, label='A2C (Media Movel)')
 
