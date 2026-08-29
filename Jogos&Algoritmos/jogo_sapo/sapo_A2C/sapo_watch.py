@@ -14,7 +14,7 @@ env = FroggerEnv(render=True)
 
 INPUT_SIZE = 17
 OUTPUT_SIZE = 5
-model = A2C(INPUT_SIZE).to(device)
+model = A2C(INPUT_SIZE, OUTPUT_SIZE).to(device)
 
 if os.path.exists(SAVE_PATH):
     model.load_state_dict(torch.load(SAVE_PATH, map_location=device))

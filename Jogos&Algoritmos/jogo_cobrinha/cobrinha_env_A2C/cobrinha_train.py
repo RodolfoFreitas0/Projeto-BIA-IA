@@ -25,8 +25,9 @@ if not os.path.isfile(DATA_ARCHIVE):
         writer.writerow(["Episodio", "Score", "Passos"])
 
 INPUT_SIZE = 11
+OUTPUT_SIZE = 3
 
-model = A2C(input_size=INPUT_SIZE).to(device)
+model = A2C(input_size=INPUT_SIZE, output_size=OUTPUT_SIZE).to(device)
 SAVE_PATH = os.path.join(SAVE_DIR, "cobrinha_model_a2c.pth")
 
 if os.path.exists(SAVE_PATH):
@@ -50,20 +51,22 @@ def update_model(optimizer, log_probs, values, rewards, entropies):
     log_probs = torch.cat(log_probs)
     entropies = torch.cat(entropies)
 
-    unnormalized_advantage = returns - values
-    critic_loss = unnormalized_advantage.pow(2).mean()
+    critic_loss = torch.nn.functional.smooth_l1_loss(values, returns)
 
+    unnormalized_advantage = (returns - values).detach()
     advantage = (unnormalized_advantage - unnormalized_advantage.mean()) / (unnormalized_advantage.std() + 1e-8)
 
     entropy_loss = entropies.mean()
-    actor_loss = -(log_probs * advantage.detach()).mean() - 0.01 * entropy_loss
+    actor_loss = -(log_probs * advantage).mean() - 0.01 * entropy_loss
 
     total_loss = actor_loss + 0.5 * critic_loss
 
     optimizer.zero_grad()
     total_loss.backward()
 
-    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.actor.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.critic.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.base.parameters(), max_norm=1.0)
     optimizer.step()
 
     return total_loss.item()
@@ -101,7 +104,7 @@ for episode in range(10001):
 
     update_model(optimizer, logs, vals, rews, ents)
     
-    save_data(episode, total_reward, steps)
+    save_data(episode, env.score, steps)
 
     if episode % 10 == 0:
         print(f"Ep {episode} | Score {total_reward:.1f}")

@@ -107,7 +107,6 @@ class CobraEnv:
             dir_u,
             dir_d,
 
-            # Localização da comida1
             target[0] < head[0],
             target[0] > head[0],
             target[1] < head[1],

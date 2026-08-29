@@ -15,7 +15,7 @@ SAVE_DIR = os.path.join(BASE_DIR, GAME_NAME)
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 DATA_DIR = "Dados IA"
-DATA_ARCHIVE = os.path.join(DATA_DIR, "dados_ia_pong.csv")
+DATA_ARCHIVE = os.path.join(DATA_DIR, "dados_ia_pong_a2c.csv")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 if not os.path.isfile(DATA_ARCHIVE):
@@ -34,13 +34,13 @@ if os.path.exists(SAVE_PATH_R) and os.path.exists(SAVE_PATH_L):
     model_L.load_state_dict(torch.load(SAVE_PATH_L, map_location=device))
     print("Modelos Carregados")
 
-optimizer_R = optim.Adam(model_R.parameters(), lr=0.0005)
-optimizer_L = optim.Adam(model_L.parameters(), lr=0.0005)
+optimizer_R = optim.RMSprop(model_R.parameters(), lr=0.0007, alpha=0.99, eps=1e-5)
+optimizer_L = optim.RMSprop(model_L.parameters(), lr=0.0007, alpha=0.99, eps=1e-5)
 
-env = PongEnv(render=False, player=False)
 gamma = 0.99
+env = PongEnv(render=False, player=False, gamma=gamma)
 
-def update_model(optimizer, log_probs, values, rewards, entropies):
+def update_model(optimizer, model, log_probs, values, rewards, entropies, entropy_coef):
     returns = []
     G = 0
     for r in reversed(rewards):
@@ -52,22 +52,22 @@ def update_model(optimizer, log_probs, values, rewards, entropies):
     log_probs = torch.cat(log_probs)
     entropies = torch.cat(entropies)
 
-    advantage = returns - values
+    critic_loss = torch.nn.functional.smooth_l1_loss(values, returns)
 
-    critic_loss = advantage.pow(2).mean()
-
-    advantage = (advantage - advantage.mean()) / (advantage.std() + 1e-8)
+    advantage = (returns - values).detach()
+    advantage = torch.clamp(advantage, -5.0, 5.0)
 
     entropy_loss = entropies.mean()
-    actor_loss = -(log_probs * advantage.detach()).mean() - 0.01 * entropy_loss
+    actor_loss = -(log_probs * advantage).mean() - entropy_coef * entropy_loss
 
     total_loss = actor_loss + 0.5 * critic_loss
 
     optimizer.zero_grad()
     total_loss.backward()
 
-    torch.nn.utils.clip_grad_norm_(model_R.parameters(), max_norm=0.5)
-    torch.nn.utils.clip_grad_norm_(model_L.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.actor.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.critic.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.base.parameters(), max_norm=1.0)
 
     optimizer.step()
 
@@ -118,8 +118,10 @@ for episode in range(10001):
         tot_R += rwd_R
         tot_L += rwd_L
     
-    update_model(optimizer_R, logs_R, vals_R, rews_R, ents_R)
-    update_model(optimizer_L, logs_L, vals_L, rews_L, ents_L)
+    entropy_coef = max(0.01, 0.1 * (0.9999 ** episode))
+
+    update_model(optimizer_R, model_R, logs_R, vals_R, rews_R, ents_R, entropy_coef)
+    update_model(optimizer_L, model_L, logs_L, vals_L, rews_L, ents_L, entropy_coef)
     
     save_data(episode, tot_R, tot_L, steps)
 

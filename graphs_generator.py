@@ -13,9 +13,9 @@ GAMES_CONFIG = {
     "2": {"name": "Passaro (Flappy)", "folder": "jogo_passaro", "csv_h": "dados_humano_passaro.csv", "csv_dqn": "dados_ia_passaro.csv", "csv_a2c": "dados_ia_passaro_a2c.csv"},
     "3": {"name": "Desviar (Dodger)", "folder": "jogo_desviar", "csv_h": "dados_humano_desviar.csv", "csv_dqn": "dados_ia_desviar.csv", "csv_a2c": "dados_ia_desviar_a2c.csv"},
     "4": {"name": "Cobrinha (Snake)", "folder": "jogo_cobrinha", "csv_h": "dados_humano_cobrinha.csv", "csv_dqn": "dados_ia_cobrinha.csv", "csv_a2c": "dados_ia_cobrinha_a2c.csv"},
-    "5": {"name": "Pulo (Jump)", "folder": "jogo_pulo", "csv_h": "dados_humano_pulo.csv", "csv_dqn": "dados_ia_pulo.csv", "csv_a2c": "dados_ia_pulo_a2c.csv"},
+    "5": {"name": "Pulo (Jump)", "folder": "jogo_pulo", "csv_h": "dados_humano_pulo.csv", "csv_dqn": "dados_ia_pulo_dqn.csv", "csv_a2c": "dados_ia_pulo_a2c.csv"},
     "6": {"name": "Mira (Aim)", "folder": "jogo_mira", "csv_h": "dados_humano_mira.csv", "csv_dqn": "dados_ia_mira.csv", "csv_a2c": "dados_ia_mira_a2c.csv"},
-    "7": {"name": "Ping (Pong)", "folder": "jogo_pong", "csv_h": "dados_humano_pong.csv", "csv_dqn": "dados_ia_pong_dqn.csv", "csv_a2c": "dados_ia_pong.csv"},
+    "7": {"name": "Ping (Pong)", "folder": "jogo_pong", "csv_h": "dados_humano_pong.csv", "csv_dqn": "dados_ia_pong_dqn.csv", "csv_a2c": "dados_ia_pong_a2c.csv"},
     "8": {"name": "Arkanoid", "folder": "jogo_arkanoid", "csv_h": "dados_humano_arkanoid.csv", "csv_dqn": "dados_ia_arkanoid_dqn.csv", "csv_a2c": "dados_ia_arkanoid_a2c.csv"},
     "9": {"name": "Pousar (Lunar Lander)", "folder": "jogo_pousar", "csv_h": "dados_humano_pousar.csv", "csv_dqn": "dados_ia_pousar_dqn.csv", "csv_a2c": "dados_ia_pousar_a2c.csv"}
 }

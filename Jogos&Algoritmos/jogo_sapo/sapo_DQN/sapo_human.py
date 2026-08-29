@@ -8,7 +8,7 @@ DATA = "Dados Humanos"
 DATA_NAME = "dados_humano_sapo.csv"
 DATA_ARCHIVE = os.path.join(DATA, DATA_NAME)
 
-def save_data(episode, score, steps):
+def save_data(episode, steps):
     if not os.path.exists(DATA):
         os.makedirs(DATA)
 
@@ -16,8 +16,8 @@ def save_data(episode, score, steps):
     with open(DATA_ARCHIVE, mode='a', newline='') as file:
         writer = csv.writer(file)
         if not arquivo_existe:
-            writer.writerow(["Episodio", "Score", "Passos"])
-        writer.writerow([episode, score, steps])
+            writer.writerow(["Episodio", "Passos"])
+        writer.writerow([episode, steps])
 
 def play_human():
     env = FroggerEnv(render=True)
@@ -33,30 +33,28 @@ def play_human():
         steps = 0
         
         while not done:
-            action = 0 
-            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
-                
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP or event.key == pygame.K_w:
-                        action = 1
-                    elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                        action = 2
-                    elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                        action = 3
-                    elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-                        action = 4
+
+            keys = pygame.key.get_pressed()
+            action = 0
+            if keys[pygame.K_UP] or keys[pygame.K_w]:
+                action = 1
+            elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
+                action = 2
+            elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                action = 3
+            elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                action = 4
 
             next_state, reward, done = env.step(action)
             steps += 1
 
-        score = env.score
-        print(f"Ep {episode} | Score: {score} | Steps: {steps} frames")
+        print(f"Ep {episode} | Steps: {steps} frames")
         
-        save_data(episode, score, steps)
+        save_data(episode, steps)
         episode += 1
         
         time.sleep(1) 

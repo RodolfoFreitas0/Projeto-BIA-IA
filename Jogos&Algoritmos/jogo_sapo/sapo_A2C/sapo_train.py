@@ -22,7 +22,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 if not os.path.isfile(DATA_ARCHIVE):
     with open(DATA_ARCHIVE, mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["Episodio", "Score", "Passos"])
+        writer.writerow(["Episodio", "Passos"])
 
 INPUT_SIZE = 17
 OUTPUT_SIZE = 5
@@ -50,30 +50,32 @@ def update_model(optimizer, log_probs, values, rewards, entropies):
     log_probs = torch.cat(log_probs)
     entropies = torch.cat(entropies)
 
-    unnormalized_advantage = returns - values
-    critic_loss = unnormalized_advantage.pow(2).mean()
+    critic_loss = torch.nn.functional.smooth_l1_loss(values, returns)
 
+    unnormalized_advantage = (returns - values).detach()
     if unnormalized_advantage.numel() > 1:
         advantage = (unnormalized_advantage - unnormalized_advantage.mean()) / (unnormalized_advantage.std() + 1e-8)
     else:
         advantage = unnormalized_advantage
 
     entropy_loss = entropies.mean()
-    actor_loss = -(log_probs * advantage.detach()).mean() - 0.01 * entropy_loss
+    actor_loss = -(log_probs * advantage).mean() - 0.01 * entropy_loss
 
     total_loss = actor_loss + 0.5 * critic_loss
 
     optimizer.zero_grad()
     total_loss.backward()
-    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.actor.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.critic.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.base.parameters(), max_norm=1.0)
     optimizer.step()
 
     return total_loss.item()
 
-def save_data(episode, score, steps):
+def save_data(episode, steps):
     with open(DATA_ARCHIVE, mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([episode, score, steps])
+        writer.writerow([episode, steps])
 
 for episode in range(MAX_EPISODES):
     state = env.reset()
@@ -103,10 +105,10 @@ for episode in range(MAX_EPISODES):
         total_reward += reward
 
     update_model(optimizer, logs, vals, rews, ents)
-    save_data(episode, env.score, steps)
+    save_data(episode, steps)
 
     if episode % 10 == 0:
-        print(f"Ep {episode} | Score {env.score} | Reward {total_reward:.1f}")
+        print(f"Ep {episode} | Reward {total_reward:.1f}")
 
     if episode % 100 == 0:
         torch.save(model.state_dict(), SAVE_PATH)

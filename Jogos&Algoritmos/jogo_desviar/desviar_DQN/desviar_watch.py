@@ -6,7 +6,7 @@ from desviar_model import DQN
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BASE_DIR = "Models"
-GAME_NAME = "jogo_dodger"
+GAME_NAME = "jogo_desviar"
 SAVE_DIR = os.path.join(BASE_DIR, GAME_NAME)
 SAVE_PATH = os.path.join(SAVE_DIR, "desviar_model_DQN.pth")
 

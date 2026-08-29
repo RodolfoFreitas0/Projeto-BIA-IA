@@ -41,7 +41,7 @@ class Enemy:
             self.width,
             self.height
         )
-        self.speed = random.uniform(4, 9)
+        self.speed = random.uniform(4, 7)
         
     def update(self):
         self.rect.y += self.speed
@@ -151,8 +151,6 @@ class DodgerEnv:
             
         if self.player.rect.colliderect(self.zone_rect):
             reward += 0.2
-            if self.frames % 30 == 0:
-                self.score += 1
         else:
             if dist_new < dist_old:
                 reward += 0.05
@@ -196,13 +194,13 @@ class DodgerEnv:
 
         self.screen.fill((30, 30, 30))
         
-        pygame.draw.rect(self.screen, (0, 255, 0), self.zone_rect, 3)
+        # pygame.draw.rect(self.screen, (0, 255, 0), self.zone_rect, 3)
         
         pygame.draw.rect(self.screen, (0, 150, 255), self.player.rect)
         for enemy in self.enemies:
             pygame.draw.rect(self.screen, (255, 50, 50), enemy.rect)
             
-        score_txt = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
+        score_txt = self.font.render(f"Score: {self.frames//60}", True, (255, 255, 255))
         self.screen.blit(score_txt, (10, 10))
 
         pygame.display.flip()

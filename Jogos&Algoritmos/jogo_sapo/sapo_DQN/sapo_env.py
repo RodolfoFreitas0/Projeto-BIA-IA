@@ -10,6 +10,7 @@ class Frog:
         self.width = 40
         self.height = 40
         self.speed = 40
+        self.timer = 0
         self.reset()
     
     def reset(self):
@@ -17,11 +18,14 @@ class Frog:
         self.rect = pygame.Rect(start_x, WINDOW_HEIGHT - 60, self.width, self.height)
 
     def move(self, dx, dy):
-        self.rect.x += dx * self.speed
-        self.rect.y += dy * self.speed
-        self.rect.left = max(0, self.rect.left)
-        self.rect.right = min(WINDOW_WIDTH, self.rect.right)
-        self.rect.bottom = min(WINDOW_HEIGHT, self.rect.bottom)
+        self.timer += 1
+        if self.timer >= 15:
+            self.rect.x += dx * self.speed
+            self.rect.y += dy * self.speed
+            self.rect.left = max(0, self.rect.left)
+            self.rect.right = min(WINDOW_WIDTH, self.rect.right)
+            self.rect.bottom = min(WINDOW_HEIGHT, self.rect.bottom)
+            self.timer = 0
 
 class Obstacle:
     def __init__(self, x, y, width, direction, delay):
@@ -71,7 +75,6 @@ class FroggerEnv:
         self.frog = Frog()
         self.obstacles = []
         self.create_lanes()
-        self.score = 0
         self.done = False
         self.steps = 0
         self.highest_y = self.frog.rect.y
@@ -141,7 +144,6 @@ class FroggerEnv:
         if not self.done and self.frog.rect.top <= 60:
             self.done = True
             reward += 100.0
-            self.score += 1
 
         if self.steps > 1500:
             self.done = True
@@ -174,9 +176,6 @@ class FroggerEnv:
         pygame.draw.rect(self.screen, (0, 255, 0), self.frog.rect)
         for obs in self.obstacles:
             pygame.draw.rect(self.screen, (255, 0, 0), obs.rect)
-            
-        score_txt = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
-        self.screen.blit(score_txt, (10, 10))
 
         pygame.display.flip()
         self.clock.tick(60)

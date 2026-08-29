@@ -11,7 +11,10 @@ SAVE_DIR = os.path.join(BASE_DIR, GAME_NAME)
 SAVE_PATH = os.path.join(SAVE_DIR, "pulo_model_a2c.pth")
 
 env = PuloEnv(render=True)
-model = A2C().to(device)
+INPUT_SIZE = 7
+OUTPUT_SIZE = 2
+
+model = A2C(INPUT_SIZE, OUTPUT_SIZE).to(device)
 
 if os.path.exists(SAVE_PATH):
     model.load_state_dict(torch.load(SAVE_PATH, map_location=device))
