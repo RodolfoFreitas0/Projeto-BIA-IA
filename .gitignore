@@ -2,7 +2,14 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
+ 
 venv/
 env/
 .env
+.venv/
+
+.vscode/
+.idea/
+
+.DS_Store
+Thumbs.db
