@@ -26,7 +26,7 @@ else:
 env = ArkanoidEnv(render=True)
 
 def watch():
-    for episode in range(10):
+    for episode in range(1000):
         state = env.reset()
         done = False
         total_reward = 0

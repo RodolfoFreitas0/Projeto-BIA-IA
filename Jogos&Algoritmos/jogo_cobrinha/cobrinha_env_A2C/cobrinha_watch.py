@@ -14,7 +14,8 @@ SAVE_PATH = os.path.join(SAVE_DIR, "cobrinha_model_a2c.pth")
 env = CobraEnv(render=True)
 
 INPUT_SIZE = 11
-model = A2C(input_size=INPUT_SIZE).to(device)
+OUTPUT_SIZE = 3
+model = A2C(input_size=INPUT_SIZE, output_size=OUTPUT_SIZE).to(device)
 
 if os.path.exists(SAVE_PATH):
     model.load_state_dict(torch.load(SAVE_PATH, map_location=device))

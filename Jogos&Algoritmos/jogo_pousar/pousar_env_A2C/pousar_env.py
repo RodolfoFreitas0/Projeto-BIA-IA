@@ -32,7 +32,9 @@ class Ship:
         
         self.gravity = 0.05
         self.thrust_power = 0.15
-        self.torque_power = 0.15
+        self.torque_power = 0.08
+        self.max_angular_velocity = 4.0
+        self.angular_damping = 0.99
         
         self.fuel = 1000
         self.is_thrusting = False
@@ -55,7 +57,9 @@ class Ship:
                 self.fuel -= 2
                 self.is_thrusting = True
 
-        self.angle += self.angular_vel
+        self.angular_vel *= self.angular_damping
+        self.angular_vel = max(-self.max_angular_velocity, min(self.max_angular_velocity, self.angular_vel))
+        self.angle = (self.angle + self.angular_vel) % 360.0
         self.x += self.x_vel
         self.y += self.y_vel
 
@@ -72,6 +76,8 @@ class LandingPad:
         self.flag_right = pygame.Rect(self.rect.right - 5, self.rect.top - 40, 5, 40)
 
 class LunarLanderEnv:
+    ANGULAR_VEL_SNAP_THRESHOLD = 0.1
+
     def __init__(self, render=False):
         self.render_mode = render
         self.window_width = WINDOW_WIDTH
@@ -84,7 +90,7 @@ class LunarLanderEnv:
             self.font = pygame.font.SysFont("Consolas", 24)
             
         self.action_space = 4
-        self.observation_space = 9 
+        self.observation_space = 10 
         self.reset()
 
     def reset(self):
@@ -92,6 +98,7 @@ class LunarLanderEnv:
         self.pad = LandingPad()
         self.frames = 0
         self.done = False
+        self.outcome = "running"
         self.landing_timer = 0
         
         self.l_hit = False
@@ -105,17 +112,25 @@ class LunarLanderEnv:
         pad_center_x = self.pad.rect.centerx
         pad_center_y = self.pad.rect.top
         
-        dx = (self.ship.x - pad_center_x) / self.window_width
-        dy = (self.ship.y - pad_center_y) / self.window_height
-        dist = math.hypot(dx, dy)
+        dx = abs(self.ship.x - pad_center_x) / (self.window_width / 2.0)
+        dy = abs(self.ship.y - pad_center_y) / self.window_height
         
         vel = math.hypot(self.ship.x_vel, self.ship.y_vel) / 10.0
         
-        angle = abs(self.ship.angle % 360)
-        if angle > 180: angle = 360 - angle
-        angle_norm = angle / 180.0
-        
-        shaping = -100.0 * dist - 50.0 * vel - 50.0 * angle_norm
+        angle = ((self.ship.angle + 180.0) % 360.0) - 180.0
+        abs_angle = abs(angle)
+        angle_score = max(0.0, 1.0 - abs_angle / 45.0)
+
+        altitude_factor = 1.0 - min(dy, 1.0)
+        angle_bonus = 30.0 * angle_score * altitude_factor
+
+        alignment_bonus = 60.0 * (1.0 - min(dx, 1.0))
+
+        pad_dx = abs(self.ship.x - pad_center_x) / (self.pad.rect.width / 2.0)
+        center_bonus = 25.0 * max(0.0, 1.0 - min(pad_dx, 1.0)) * altitude_factor
+
+        shaping = alignment_bonus + angle_bonus + center_bonus - (35.0 * dy) - (35.0 * vel)
+        shaping -= 1.5 * abs(self.ship.angular_vel)
         
         if self.l_hit: shaping += 10.0
         if self.r_hit: shaping += 10.0
@@ -128,7 +143,8 @@ class LunarLanderEnv:
             (self.ship.y - self.pad.rect.top) / self.window_height,
             self.ship.x_vel / 10.0,
             self.ship.y_vel / 10.0,
-            (self.ship.angle % 360) / 360.0,
+            math.sin(math.radians(self.ship.angle)),
+            math.cos(math.radians(self.ship.angle)),
             self.ship.angular_vel / 5.0,
             self.ship.fuel / 1000.0,
             1.0 if self.l_hit else 0.0,
@@ -137,29 +153,41 @@ class LunarLanderEnv:
         return state
 
     def step(self, action):
-        reward = 0.0
+        reward = -0.01
         self.frames += 1
         
         thrust = (action == 1)
         left = (action == 2)
         right = (action == 3)
-        
-        if thrust: reward -= 0.05
-        if left or right: reward -= 0.01
+
+        was_grounded = self.l_hit or self.r_hit
+        if was_grounded:
+            left = False
+            right = False
+
+        leg_offset_l = pygame.math.Vector2(-30, 30)
+        leg_offset_r = pygame.math.Vector2(30, 30)
+
+        prev_center = pygame.math.Vector2(self.ship.x, self.ship.y)
+        prev_leg_l = prev_center + leg_offset_l.rotate(-self.ship.angle)
+        prev_leg_r = prev_center + leg_offset_r.rotate(-self.ship.angle)
 
         self.ship.update_logic(thrust, left, right)
         
         center = pygame.math.Vector2(self.ship.x, self.ship.y)
-        leg_offset_l = pygame.math.Vector2(-30, 30) 
-        leg_offset_r = pygame.math.Vector2(30, 30)
-        
         leg_l = center + leg_offset_l.rotate(-self.ship.angle)
         leg_r = center + leg_offset_r.rotate(-self.ship.angle)
         
         pad = self.pad.rect
-        
-        self.l_hit = pad.left <= leg_l.x <= pad.right and leg_l.y >= pad.top
-        self.r_hit = pad.left <= leg_r.x <= pad.right and leg_r.y >= pad.top
+
+        def leg_touches_top(leg, prev_leg):
+            if not (pad.left <= leg.x <= pad.right):
+                return False
+            came_from_above = prev_leg.y <= pad.top + 1.0
+            return came_from_above and leg.y >= pad.top
+
+        self.l_hit = leg_touches_top(leg_l, prev_leg_l)
+        self.r_hit = leg_touches_top(leg_r, prev_leg_r)
         
         body_offsets = [
             pygame.math.Vector2(-20, -30), pygame.math.Vector2(20, -30),
@@ -175,20 +203,24 @@ class LunarLanderEnv:
 
         if self.ship.y + (self.ship.height / 2) >= WINDOW_HEIGHT - 10 or self.ship.x - (self.ship.width / 2) < 0 or self.ship.x + (self.ship.width / 2) > WINDOW_WIDTH or self.ship.y - (self.ship.height / 2) < 0:
             self.done = True
-            reward -= 50.0  
+            self.outcome = "crash"
+            reward -= 100.0  
         
         elif body_hit:
             self.done = True
-            reward -= 50.0  
+            self.outcome = "crash"
+            reward -= 100.0  
             
         elif self.frames >= MAX_FRAMES:
             self.done = True
-            reward -= 50.0
+            self.outcome = "timeout"
+            reward -= 100.0
             
         elif self.l_hit or self.r_hit:
             if self.ship.y_vel >= 2.5:
                 self.done = True
-                reward -= 50.0  
+                self.outcome = "crash"
+                reward -= 100.0  
             else:
                 max_y = max(leg_l.y if self.l_hit else -999, leg_r.y if self.r_hit else -999)
                 self.ship.y -= (max_y - pad.top)
@@ -201,21 +233,23 @@ class LunarLanderEnv:
                 
                 if self.l_hit and not self.r_hit:
                     lever_arm = self.ship.x - leg_l.x
-                    self.ship.angular_vel -= lever_arm * 0.01
-                    self.ship.angular_vel *= 0.9
+                    self.ship.angular_vel -= lever_arm * 0.002
+                    self.ship.angular_vel *= 0.8
                 elif self.r_hit and not self.l_hit:
                     lever_arm = self.ship.x - leg_r.x
-                    self.ship.angular_vel -= lever_arm * 0.01
-                    self.ship.angular_vel *= 0.9
+                    self.ship.angular_vel -= lever_arm * 0.002
+                    self.ship.angular_vel *= 0.8
                 elif self.l_hit and self.r_hit:
                     self.ship.angular_vel *= 0.5 
-                    
-                    norm_angle = abs(self.ship.angle % 360)
-                    if (norm_angle < 3 or norm_angle > 357) and abs(self.ship.angular_vel) < 0.1:
-                        self.ship.angle = 0
-                        self.ship.angular_vel = 0
-                        norm_angle = 0 
-                    
+
+                norm_angle = abs(self.ship.angle % 360)
+                near_upright = norm_angle < 3 or norm_angle > 357
+                if near_upright and abs(self.ship.angular_vel) < self.ANGULAR_VEL_SNAP_THRESHOLD:
+                    self.ship.angle = 0
+                    self.ship.angular_vel = 0
+                    norm_angle = 0
+
+                if self.l_hit and self.r_hit:
                     total_kinetic_energy = abs(self.ship.x_vel) + abs(self.ship.y_vel) + abs(self.ship.angular_vel)
                     is_upright = norm_angle < 15 or norm_angle > 345
                     
@@ -223,9 +257,12 @@ class LunarLanderEnv:
                         self.landing_timer += 1
                         if self.landing_timer >= 60:
                             self.done = True
+                            self.outcome = "landed"
                             reward += 100.0  
                     else:
                         self.landing_timer = 0
+                else:
+                    self.landing_timer = 0
         else:
             self.landing_timer = 0
 

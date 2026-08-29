@@ -74,7 +74,7 @@ class AimEnv:
             self.font = pygame.font.SysFont("Arial", 24)
 
         self.action_space = 5
-        self.observation_space = 14
+        self.observation_space = 2 + MAX_TARGETS * 6   
         self.reset()
 
     def reset(self):
@@ -98,17 +98,24 @@ class AimEnv:
             self.cursor_y / self.window_height
         ]
 
+        sorted_targets = sorted(
+            self.tmanager.targets,
+            key=lambda t: math.hypot(self.cursor_x - t.rect.centerx, self.cursor_y - t.rect.centery)
+        )
+
         for i in range(MAX_TARGETS):
-            if i < len(self.tmanager.targets):
-                t = self.tmanager.targets[i]
+            if i < len(sorted_targets):
+                t = sorted_targets[i]
                 state.extend([
                     t.rect.centerx / self.window_width,
                     t.rect.centery / self.window_height,
                     t.rect.width / 200,
-                    t.lifetime / t.max_lifetime
+                    t.lifetime / t.max_lifetime,
+                    t.speed_x / 2,
+                    t.speed_y / 2
                 ])
             else:
-                state.extend([0.0, 0.0, 0.0, 0.0])
+                state.extend([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
         return state
 
@@ -116,10 +123,11 @@ class AimEnv:
         reward = 0
         self.timer -= 1
 
-        dist_old = float("inf")
+        target_ref = None
+        dist_old = None
         if self.tmanager.targets:
-            nearest = min(self.tmanager.targets, key=lambda t: math.hypot(self.cursor_x - t.rect.centerx, self.cursor_y - t.rect.centery))
-            dist_old = math.hypot(self.cursor_x - nearest.rect.centerx, self.cursor_y - nearest.rect.centery)
+            target_ref = min(self.tmanager.targets, key=lambda t: math.hypot(self.cursor_x - t.rect.centerx, self.cursor_y - t.rect.centery))
+            dist_old = math.hypot(self.cursor_x - target_ref.rect.centerx, self.cursor_y - target_ref.rect.centery)
 
         if action == 0:
             self.cursor_y = max(0, self.cursor_y - CURSOR_SPEED)
@@ -135,27 +143,23 @@ class AimEnv:
         self.tmanager.spawn(self.window_width, self.window_height)
         self.tmanager.update(self.window_width, self.window_height)
 
-        dist_new = float("inf")
-        if self.tmanager.targets:
-            nearest = min(self.tmanager.targets, key=lambda t: math.hypot(self.cursor_x - t.rect.centerx, self.cursor_y - t.rect.centery))
-            dist_new = math.hypot(self.cursor_x - nearest.rect.centerx, self.cursor_y - nearest.rect.centery)
+        dist_new = None
+        if target_ref is not None and target_ref in self.tmanager.targets:
+            dist_new = math.hypot(self.cursor_x - target_ref.rect.centerx, self.cursor_y - target_ref.rect.centery)
 
         if clicked:
             hit = self.tmanager.check_click((self.cursor_x, self.cursor_y))
             if hit:
-                if hit.lifetime > 120:
-                    reward += 5.0
-                    self.score += 1
-                else:
-                    reward += 10.0
-                    self.score += 2
+                reward += 5.0
+                self.score += 1
             else:
-                reward -= 0.05
+                reward -= 0.1
         else:
-            if dist_new < dist_old:
-                reward += 0.05
-            elif dist_new > dist_old:
-                reward -= 0.05
+            if dist_old is not None and dist_new is not None:
+                if dist_new < dist_old:
+                    reward += 0.05
+                elif dist_new > dist_old:
+                    reward -= 0.05
             reward -= 0.01
 
         if self.timer <= 0:

@@ -13,7 +13,7 @@ SAVE_PATH = os.path.join(SAVE_DIR, "mira_model_dqn.pth")
 
 env = AimEnv(render=True)
 
-INPUT_SIZE = 14
+INPUT_SIZE = 20
 OUTPUT_SIZE = 5
 model = DQN(input_size=INPUT_SIZE, output_size=OUTPUT_SIZE).to(device)
 

@@ -26,12 +26,13 @@ if not os.path.isfile(DATA_ARCHIVE):
         writer = csv.writer(file)
         writer.writerow(["Episodio", "Score", "Passos"])
 
-INPUT_SIZE = 14
+INPUT_SIZE = 20
 OUTPUT_SIZE = 5
 BATCH_SIZE = 64
 GAMMA = 0.99
 LR = 0.0005
 MAX_EPISODES = 10000
+TARGET_UPDATE_FREQ = 1000
 
 epsilon = 1.0
 epsilon_min = 0.01
@@ -111,13 +112,14 @@ for episode in range(MAX_EPISODES):
         if global_step % 4 == 0:
             train_step()
 
+        if global_step % TARGET_UPDATE_FREQ == 0:
+            target_net.load_state_dict(policy_net.state_dict())
+
     save_data(episode, env.score, steps)
 
     if epsilon > epsilon_min:
         epsilon *= epsilon_decay
 
-    target_net.load_state_dict(policy_net.state_dict())
-    
     if episode % 10 == 0:
         print(f"Ep {episode} | Score {env.score} | Reward {total_reward:.1f} | Epsilon {epsilon:.3f}")
         

@@ -56,24 +56,34 @@ class PuloEnv:
         return self.get_state(), reward, self.done
 
     def get_state(self):
-        next_obs = None
-        for obs in self.obs.obstacles:
-            if obs.rect.x > self.player.rect.x:
-                next_obs = obs
-                break
-        
-        if next_obs:
-            distance = (next_obs.rect.x - self.player.rect.x) / WIDTH
-            width = next_obs.rect.width / 100
-        else:
-            distance = 1
-            width = 0
-        
+        upcoming = sorted(
+            (obs for obs in self.obs.obstacles if obs.rect.x > self.player.rect.x),
+            key=lambda o: o.rect.x
+        )
+
+        def obs_features(obs):
+            if obs is None:
+                return 1.0, 0.0
+            distance = (obs.rect.x - self.player.rect.x) / WIDTH
+            width = obs.rect.width / 100
+            return distance, width
+
+        next_obs = upcoming[0] if len(upcoming) > 0 else None
+        second_obs = upcoming[1] if len(upcoming) > 1 else None
+
+        distance, width = obs_features(next_obs)
+        distance2, width2 = obs_features(second_obs)
+
+        obstacle_speed = (next_obs.speed_x / 10) if next_obs else 0.0
+
         return [
             self.player.rect.y / HEIGHT,
             self.player.speed_y / 10,
             distance,
-            width
+            width,
+            distance2,
+            width2,
+            obstacle_speed
         ]
 
     def render(self):
@@ -129,6 +139,7 @@ class Obstacle():
         self.rect = pygame.Rect(WIDTH + 30, HEIGHT // 2 + 40, width * 10, 20)
         self.speed_x = 5
         self.passed = False
+        self.min_gap = None
     
     def is_out(self):
         return self.rect.x < -60
@@ -160,9 +171,23 @@ class Obstacle_Manager():
             self.timer = random.randint(300, 800)
     
         for obstacle in self.obstacles[:]:
+            horizontally_overlapping = (
+                obstacle.rect.right > player.rect.left and
+                obstacle.rect.left < player.rect.right
+            )
+
+            if horizontally_overlapping and player.rect.bottom <= obstacle.rect.top:
+                gap = obstacle.rect.top - player.rect.bottom
+                if obstacle.min_gap is None or gap < obstacle.min_gap:
+                    obstacle.min_gap = gap
+
             if not obstacle.passed and obstacle.rect.right < player.rect.left:
                 obstacle.passed = True
                 self.passed_reward += 10
+                
+                if obstacle.min_gap is not None:
+                    clearance_bonus = max(0.0, min(obstacle.min_gap / 20, 1.0)) * 5
+                    self.passed_reward += clearance_bonus
 
             if obstacle.rect.colliderect(player.rect):
                 self.collided = True

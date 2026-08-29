@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 class A2C(nn.Module):
-    def __init__(self, input_size):
+    def __init__(self, input_size, output_size):
         super().__init__()
 
         self.base = nn.Sequential(
@@ -18,7 +18,7 @@ class A2C(nn.Module):
         self.actor = nn.Sequential(
             nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(64, 3)
+            nn.Linear(64, output_size)
         )
 
         self.critic = nn.Sequential(

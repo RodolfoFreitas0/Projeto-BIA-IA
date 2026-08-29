@@ -17,7 +17,11 @@ OUTPUT_SIZE = 3
 model = DQN(INPUT_SIZE, OUTPUT_SIZE).to(device)
 
 if os.path.exists(SAVE_PATH):
-    model.load_state_dict(torch.load(SAVE_PATH, map_location=device))
+    checkpoint = torch.load(SAVE_PATH, map_location=device)
+    if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+        model.load_state_dict(checkpoint["model_state_dict"])
+    else:
+        model.load_state_dict(checkpoint)
     model.eval()
     print("Modelo carregado!")
 else:

@@ -51,19 +51,21 @@ def update_model(optimizer, log_probs, values, rewards, entropies):
     log_probs = torch.cat(log_probs)
     entropies = torch.cat(entropies)
 
-    unnormalized_advantage = returns - values
-    critic_loss = unnormalized_advantage.pow(2).mean()
+    critic_loss = torch.nn.functional.smooth_l1_loss(values, returns)
 
+    unnormalized_advantage = (returns - values).detach()
     advantage = (unnormalized_advantage - unnormalized_advantage.mean()) / (unnormalized_advantage.std() + 1e-8)
 
     entropy_loss = entropies.mean()
-    actor_loss = -(log_probs * advantage.detach()).mean() - 0.01 * entropy_loss
+    actor_loss = -(log_probs * advantage).mean() - 0.01 * entropy_loss
 
     total_loss = actor_loss + 0.5 * critic_loss
 
     optimizer.zero_grad()
     total_loss.backward()
-    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.actor.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.critic.parameters(), max_norm=0.5)
+    torch.nn.utils.clip_grad_norm_(model.base.parameters(), max_norm=1.0)
     optimizer.step()
 
     return total_loss.item()

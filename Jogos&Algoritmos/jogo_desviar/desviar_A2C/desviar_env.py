@@ -198,7 +198,7 @@ class DodgerEnv:
 
         self.screen.fill((30, 30, 30))
         
-        pygame.draw.rect(self.screen, (0, 255, 0), self.zone_rect, 3)
+        # pygame.draw.rect(self.screen, (0, 255, 0), self.zone_rect, 3)
         
         pygame.draw.rect(self.screen, (0, 150, 255), self.player.rect)
         for enemy in self.enemies:
